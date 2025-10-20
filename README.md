@@ -1,4 +1,4 @@
-# ShellGame-SDL2
+# ShellGame (SDL2)
 ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game.
 
 ## ShellGame Usage
@@ -8,6 +8,49 @@ ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an S
 - All `set` commands are actions and return nothing.
 - `get` commands return a single value via the global `$reply` variable. That value will need to be saved in another variable.
 - `arr` commands return multiple values via the global `$array` variable. This array will need to be saved in another array or variables.
+
+## Simple Example
+This opens a window using the pipe backend. It loads a background image as a sprite. If the window is closed or escape is pressed it exits.
+```bash
+#!/usr/bin/env bash
+
+# Source the Pipe backend.
+source pipe.sh || exit 1
+
+# Start ShellGame.
+sg_cmd "start sg"
+
+# Set the title to ShellGame.
+sg_cmd "set sg title ShellGame"
+
+# Load the background image as a sprite.
+sg_cmd "new sprite examples/images/background.png"
+# Save the returned sprt_id to back_sprt variable.
+back_sprt=$reply
+
+# Main game loop.
+while true; do
+    # 'update sg' must be called at the top of the game loop.
+    sg_cmd "update sg"
+
+    # If esc key is pressed exit.
+    sg_cmd "get key pressed esc"
+    (( reply )) && sg_quit 0
+
+    # Clear the game renderer.
+    sg_cmd "set render clear"
+
+    # Draw the background sprite.
+    sg_cmd "draw sprite $back_sprt"
+
+    # Present the renderer.
+    sg_cmd "set render present"
+done
+
+# If exectution gets this far shut down.
+sg_quit 0
+```
+---
 
 ## ShellGame Core Commands
 
