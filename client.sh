@@ -1,30 +1,42 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
-SERVER="server/sg-server"
-CLIENT="client/sg-client"
+if [ -n "$BASH_VERSION" ]; then
+    echo "Running in Bash"
+elif [ -n "$ZSH_VERSION" ]; then
+    echo "Running in Zsh"
+    echo "Setting zero array indexing."
+    setopt KSH_ARRAYS
+    setopt SH_WORD_SPLIT
+else
+    echo "Please run in Bash or Zsh."
+    exit 1
+fi
+
+SERVER="sg-server/sg-server"
+CLIENT="sg-client/sg-client"
 SHM_DATA="/dev/shm/sg_shared_data"
 SHM_LOCK="/dev/shm/sg_shared_lock"
 SHUTDOWN_SERVER=1
 
 # Make sure the server is compiled.
-if [ ! -e $SERVER ]; then
+if [ ! -e "$SERVER" ]; then
     echo "Error: $SERVER is missing. Try running 'make release'."
     exit 1
 fi
 # Make sure the client is compiled.
-if [ ! -e $CLIENT ]; then
+if [ ! -e "$CLIENT" ]; then
     echo "Error: $CLIENT is missing. Try running 'make release'."
     exit 1
 fi
 
 # Ensure shared memory file exists
-[[ -e "$SHM_DATA" ]] || touch "$SHM_DATA"
-[[ -e "$SHM_LOCK" ]] || touch "$SHM_LOCK"
+[ -e "$SHM_DATA" ] || touch "$SHM_DATA"
+[ -e "$SHM_LOCK" ] || touch "$SHM_LOCK"
 
 # Make client wait for server to clear the lock.
-exec {FD_LOCK}<>"$SHM_LOCK"
-printf "\x01" >&$FD_LOCK
-exec {FD_LOCK}>&-
+exec 4<>"$SHM_LOCK"
+printf "\x01" >&4
+exec 4>&-
 
 # If server is already running kill it.
 if pidof "$SERVER" >/dev/null; then
@@ -34,7 +46,7 @@ if pidof "$SERVER" >/dev/null; then
 fi
 
 # Start the server in shared memory mode with the script PID.
-./$SERVER --shared $$ &
+./"$SERVER" --shared $$ &
 SERVER_PID=$!
 
 # Make sure the server started.
@@ -47,7 +59,9 @@ sg_quit() {
     # Remove the EXIT trap to prevent recursive cleanup.
     trap - EXIT
 
-    (( SHUTDOWN_SERVER )) && sg_cmd "set sdl quit"
+    if [ "$SHUTDOWN_SERVER" -ne 0 ]; then
+        sg_cmd "quit sg"
+    fi
 
     # Remove shared memory from the filesystem.
     rm "$SHM_DATA" 2>/dev/null
@@ -62,12 +76,16 @@ trap 'SHUTDOWN_SERVER=0; sg_quit 0' SIGUSR1
 trap 'sg_quit 0' SIGINT SIGTERM SIGQUIT EXIT
 
 sg_cmd() {
-    if [[ $1 == get* || $1 == new* || $1 == free* ]]; then
-        # reply=$("$CLIENT" $1)
-        read -r reply < <(./$CLIENT "$1")
-    elif [[ $1 == arr* ]]; then
-        read -a array < <(./$CLIENT "$1")
-    else
-        ./$CLIENT "$1"
-    fi
+    case "$1" in
+        get*|new*)
+            read -r reply < <(./"$CLIENT" "$1")
+            ;;
+        arr*|free*)
+            read -r line < <(./"$CLIENT" "$1")
+            array=($line)
+            ;;
+        *)
+            "$CLIENT" "$1"
+            ;;
+    esac
 }

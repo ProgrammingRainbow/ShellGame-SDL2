@@ -1,6 +1,17 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
-SERVER="server/sg-server"
+if [ -n "$BASH_VERSION" ]; then
+    echo "Running in Bash"
+elif [ -n "$ZSH_VERSION" ]; then
+    echo "Running in Zsh"
+    echo "Setting zero array indexing."
+    setopt KSH_ARRAYS
+else
+    echo "Please run in Bash or Zsh."
+    exit 1
+fi
+
+SERVER="sg-server/sg-server"
 SHM_DATA="/dev/shm/sg_shared_data"
 SHM_LOCK="/dev/shm/sg_shared_lock"
 SHUTDOWN_SERVER=1
@@ -12,13 +23,13 @@ if [ ! -e $SERVER ]; then
 fi
 
 # Ensure shared memory file exists
-[[ -e "$SHM_DATA" ]] || touch "$SHM_DATA"
-[[ -e "$SHM_LOCK" ]] || touch "$SHM_LOCK"
+[ -e "$SHM_DATA" ] || touch "$SHM_DATA"
+[ -e "$SHM_LOCK" ] || touch "$SHM_LOCK"
 
 # Make client wait for server to clear the lock.
-exec {FD_LOCK}<>"$SHM_LOCK"
-printf "\x01" >&$FD_LOCK
-exec {FD_LOCK}>&-
+exec 4<>"$SHM_LOCK"
+printf "\x01" >&4
+exec 4>&-
 
 # If server is already running kill it.
 if pidof "$SERVER_NAME" >/dev/null; then
@@ -41,7 +52,9 @@ sg_quit() {
     # Remove the EXIT trap to prevent recursive cleanup.
     trap - EXIT
 
-    (( SHUTDOWN_SERVER )) && sg_cmd "quit sg"
+    if [ "$SHUTDOWN_SERVER" -ne 0 ]; then
+        sg_cmd "quit sg"
+    fi
 
     # Remove shared memory from the filesystem.
     rm "$SHM_DATA" 2>/dev/null
@@ -58,66 +71,70 @@ trap 'sg_quit 0' SIGINT SIGTERM SIGQUIT EXIT
 sg_cmd() {
     while true; do
         # Check lock status.
-        exec {FD_LOCK}<>"$SHM_LOCK"
-        read -r -n1 -u $FD_LOCK status
-        exec {FD_LOCK}<&-
+        exec 4<>"$SHM_LOCK"
+        read -r -n1 -u 4 status
+        exec 4<&-
 
         # If status is not free loop.
         [[ "$status" != $'\x00' ]] && continue
 
         # Send argument to the shared data.
-        exec {FD_DATA}<>"$SHM_DATA"
-        printf "%s\x00" "$1" >&$FD_DATA
-        exec {FD_DATA}>&-
+        exec 3<>"$SHM_DATA"
+        printf "%s\x00" "$1" >&3
+        exec 3>&-
 
         # Set shared lock.
-        exec {FD_LOCK}<>"$SHM_LOCK"
-        printf "\x01" >&$FD_LOCK
-        exec {FD_LOCK}>&-
+        exec 4<>"$SHM_LOCK"
+        printf "\x01" >&4
+        exec 4>&-
             
-        if [[ $1 == get* || $1 == new* || $1 == free* ]]; then
-            while true; do
-                # Check lock status again.
-                exec {FD_LOCK}<>"$SHM_LOCK"
-                read -r -n1 -u $FD_LOCK status
-                exec {FD_LOCK}<&-
+        case "$1" in
+            get*|new*)
+                while true; do
+                    # Check lock status again.
+                    exec 4<>"$SHM_LOCK"
+                    read -r -n1 -u 4 status
+                    exec 4<&-
 
-                if [[ "$status" == $'\x02' ]]; then
-                    # Read from shared data to global reply.
-                    exec {FD_DATA}<>"$SHM_DATA"
-                    read -r -u $FD_DATA reply
-                    exec {FD_DATA}<&-
+                    if [[ "$status" == $'\x02' ]]; then
+                        # Read from shared data to global reply.
+                        exec 3<>"$SHM_DATA"
+                        read -r -u 3 reply
+                        exec 3<&-
 
-                    # Unset shared lock.
-                    exec {FD_LOCK}<>"$SHM_LOCK"
-                    printf "\x00" >&$FD_LOCK
-                    exec {FD_LOCK}>&-
+                        # Unset shared lock.
+                        exec 4<>"$SHM_LOCK"
+                        printf "\x00" >&4
+                        exec 4>&-
 
-                    break
-                fi
-            done
-        elif [[ $1 == arr* ]]; then
-            while true; do
-                # Check lock status again.
-                exec {FD_LOCK}<>"$SHM_LOCK"
-                read -r -n1 -u $FD_LOCK status
-                exec {FD_LOCK}<&-
+                        break
+                    fi
+                done
+                ;;
+            arr*|free*)
+                while true; do
+                    # Check lock status again.
+                    exec 4<>"$SHM_LOCK"
+                    read -r -n1 -u 4 status
+                    exec 4<&-
 
-                if [[ "$status" == $'\x02' ]]; then
-                    # Read from shared data to global reply.
-                    exec {FD_DATA}<>"$SHM_DATA"
-                    read -u $FD_DATA -a array
-                    exec {FD_DATA}<&-
+                    if [[ "$status" == $'\x02' ]]; then
+                        # Read from shared data to global reply.
+                        exec 3<>"$SHM_DATA"
+                        read -r -u 3 line
+                        array=($line)
+                        exec 3<&-
 
-                    # Unset shared lock.
-                    exec {FD_LOCK}<>"$SHM_LOCK"
-                    printf "\x00" >&$FD_LOCK
-                    exec {FD_LOCK}>&-
+                        # Unset shared lock.
+                        exec 4<>"$SHM_LOCK"
+                        printf "\x00" >&4
+                        exec 4>&-
 
-                    break
-                fi
-            done
-        fi
+                        break
+                    fi
+                done
+                ;;
+        esac
         break
     done
 }

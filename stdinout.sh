@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+SG_SHELL=0
 if [ -n "$BASH_VERSION" ]; then
     echo "Running in Bash"
 elif [ -n "$ZSH_VERSION" ]; then
@@ -7,14 +8,13 @@ elif [ -n "$ZSH_VERSION" ]; then
     echo "Setting zero array indexing."
     setopt KSH_ARRAYS
     setopt SH_WORD_SPLIT
+    SG_SHELL=1
 else
     echo "Please run in Bash or Zsh."
     exit 1
 fi
 
 SERVER="sg-server/sg-server"
-PIPE_TO_SERVER="/tmp/sg_pipe_to_server"
-PIPE_FROM_SERVER="/tmp/sg_pipe_from_server"
 SHUTDOWN_SERVER=1
 
 # Make sure the server is compiled.
@@ -23,23 +23,21 @@ if [ ! -e "$SERVER" ]; then
     exit 1
 fi
 
-# Create named pipes if needed
-[ -p "$PIPE_TO_SERVER" ] || mkfifo "$PIPE_TO_SERVER"
-[ -p "$PIPE_FROM_SERVER" ] || mkfifo "$PIPE_FROM_SERVER"
-
-# Start the server in pipe mode with the script PID.
-./"$SERVER" --pipe $$ &
-SERVER_PID=$!
-
-# Make sure the server started.
-if ! kill -0 "$SERVER_PID" 2>/dev/null; then
-    echo "[CLIENT] Server failed to start. Exiting."
-    exit 1
+# Start the server in a coprocess using --stdin mode.
+coproc SERVER_PROC { ./"$SERVER" --stdinout $$; }
+if [ "$SG_SHELL" -eq 1 ]; then
+    # Zsh assigns the coprocess file descriptor to $SERVER_PROC
+    # Write to server's stdin
+    exec 3>&"$SERVER_PROC"
+    # Read from server's stdout
+    exec 4<&SERVER_PROC
+else
+    # Bash version.
+    # Write to server's stdin
+    exec 3>&"${SERVER_PROC[1]}"
+    # Read from server's stdout
+    exec 4<&"${SERVER_PROC[0]}"
 fi
-
-# Open both pipes once and keep them open.
-exec 3> "$PIPE_TO_SERVER"
-exec 4< "$PIPE_FROM_SERVER"
 
 sg_quit() {
     # Remove the EXIT trap to prevent recursive cleanup.
@@ -49,13 +47,9 @@ sg_quit() {
         sg_cmd "quit sg"
     fi
 
-    # Close file descriptors used for the pipes.
+    # Close file descriptors.
     exec 3>&- 2>/dev/null
     exec 4<&- 2>/dev/null
-
-    # Remove named pipes from the filesystem.
-    rm "$PIPE_TO_SERVER" 2>/dev/null
-    rm "$PIPE_FROM_SERVER" 2>/dev/null
 
     exit "$1"
 }
@@ -66,16 +60,18 @@ trap 'SHUTDOWN_SERVER=0; sg_quit 0' SIGUSR1
 trap 'sg_quit 0' SIGINT SIGTERM SIGQUIT EXIT
 
 sg_cmd() {
-    # Send argument 1 to named pipe in.
+    # Send argument 1 to stdin.
     echo "$1" >&3 || sg_quit 1
 
     # Read named pipe to global variable reply or array (Blocking).
     case "$1" in
         get*|new*)
-            read -r -u 4 reply
+            read -r reply <&4
+            # read -r -u 4 reply
             ;;
         arr*|free*)
-            read -r -u 4 line
+            read -r line <&4
+            # read -r -u 4 line
             array=($line)
             ;;
     esac

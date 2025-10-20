@@ -1,13 +1,14 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 if [ $# == 1 ]; then
     case $1 in
         --client) source client.sh ;;
         --shared) source shared.sh ;;
         --socket) source socket.sh ;;
+        --stdinout) source stdinout.sh ;;
         --pipe) source pipe.sh ;;
         *)
-            echo "Usage: $0 {--pipe|--socket|--shared|--client}"
+            echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
             exit 1
             ;;
     esac
@@ -17,7 +18,7 @@ if [ $# == 1 ]; then
         exit 1
     fi
 else
-    echo "Usage: $0 {--pipe|--socket|--shared|--client}"
+    echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
     exit 1
 fi
 

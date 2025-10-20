@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 # Choose communication backend.
 if [ $# == 1 ]; then
@@ -6,9 +6,10 @@ if [ $# == 1 ]; then
         --client) source client.sh ;;
         --shared) source shared.sh ;;
         --socket) source socket.sh ;;
+        --stdinout) source stdinout.sh ;;
         --pipe) source pipe.sh ;;
         *)
-            echo "Usage: $0 {--pipe|--socket|--shared|--client}"
+            echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
             exit 1
             ;;
     esac
@@ -18,7 +19,7 @@ if [ $# == 1 ]; then
         exit 1
     fi
 else
-    echo "Usage: $0 {--pipe|--socket|--shared|--client}"
+    echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
     exit 1
 fi
 
@@ -148,7 +149,7 @@ text_fps=$reply
 sg_cmd "set text pos 10 10 $text_fps"
 
 # Override the default 60fps
-# sg_cmd "set sg fps 10000"
+sg_cmd "set sg fps 10000"
 
 # Main game loop. 
 while true; do
