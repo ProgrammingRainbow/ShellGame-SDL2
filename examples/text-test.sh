@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
 
-if [ $# == 1 ]; then
+# Option for choosing communication to server.
+if [[ $# -eq 1 ]]; then
     case $1 in
-        --client) source client.sh ;;
-        --shared) source shared.sh ;;
-        --socket) source socket.sh ;;
-        --stdinout) source stdinout.sh ;;
-        --pipe) source pipe.sh ;;
+        --client|--shared|--socket|--stdinout|--pipe)
+            source "${1#--}.sh" || {
+                echo "Error: Failed to source file for '$1'"
+                exit 1
+            }
+            ;;
         *)
             echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
             exit 1
             ;;
     esac
-
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to source file for '$1'"
-        exit 1
-    fi
 else
     echo "Usage: $0 {--pipe|--stdinout|--socket|--shared|--client}"
     exit 1
