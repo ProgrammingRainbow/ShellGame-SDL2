@@ -1,7 +1,9 @@
 # ShellGame (SDL2)
 ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game.
 
----
+![Screenshot](screenshot.png)
+![Screenshot](screenshot1.png)
+![Screenshot](screenshot2.png)
 
 ## Install on archlinux
 Install sdl2 and friends.
