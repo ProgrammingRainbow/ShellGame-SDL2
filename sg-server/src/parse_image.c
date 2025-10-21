@@ -41,8 +41,8 @@ bool parse_image(SdlServer *s, char *action) {
             }
             return true;
         }
-    } else if (!strcmp(action, "update")) {
-        // update image <filename> {img_id array}
+    } else if (!strcmp(action, "set")) {
+        // set image <filename> {img_id array}
         char *p2 = strtok(NULL, " ");
         if (p2) {
             while (p2) {

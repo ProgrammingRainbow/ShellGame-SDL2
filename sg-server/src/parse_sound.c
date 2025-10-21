@@ -25,8 +25,8 @@ bool parse_sound(SdlServer *s, char *action) {
             p1 = strtok(NULL, " ");
         }
         return true;
-    } else if (!strcmp(action, "update")) {
-        // update sound <filename> {snd_id array}
+    } else if (!strcmp(action, "set")) {
+        // set sound <filename> {snd_id array}
         char *p2 = strtok(NULL, " ");
         if (p2) {
             while (p2) {

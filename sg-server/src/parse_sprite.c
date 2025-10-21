@@ -28,20 +28,7 @@ bool parse_sprite(SdlServer *s, char *action) {
     } else if (!strcmp(action, "update")) {
         char *p2 = strtok(NULL, " ");
         char *p3 = strtok(NULL, " ");
-        if (!strcmp(p1, "image") && p3) {
-            // update sprite image <filename> {sprt_id array}
-            while (p3) {
-                int sprt_id = 0;
-                if (!str_to_id(&s->game->sprites, p3, &sprt_id, s->orig_str)) {
-                    return false;
-                }
-                if (!sprite_update_image(s->game, sprt_id, p2)) {
-                    return false;
-                }
-                p3 = strtok(NULL, " ");
-            }
-            return true;
-        } else if (!strcmp(p1, "pos")) {
+        if (!strcmp(p1, "pos")) {
             // update sprite pos <x_vel> <y_vel> {sprt_id array}
             char *p4 = strtok(NULL, " ");
             if (p4) {
@@ -111,7 +98,20 @@ bool parse_sprite(SdlServer *s, char *action) {
     } else if (!strcmp(action, "set") && p1) {
         char *p2 = strtok(NULL, " ");
         char *p3 = strtok(NULL, " ");
-        if (!strcmp(p1, "pos") && p3) {
+        if (!strcmp(p1, "image") && p3) {
+            // set sprite image <filename> {sprt_id array}
+            while (p3) {
+                int sprt_id = 0;
+                if (!str_to_id(&s->game->sprites, p3, &sprt_id, s->orig_str)) {
+                    return false;
+                }
+                if (!sprite_update_image(s->game, sprt_id, p2)) {
+                    return false;
+                }
+                p3 = strtok(NULL, " ");
+            }
+            return true;
+        } else if (!strcmp(p1, "pos") && p3) {
             // set sprite pos <x> <y> {sprt_id array}
             char *p4 = strtok(NULL, " ");
             if (p4) {

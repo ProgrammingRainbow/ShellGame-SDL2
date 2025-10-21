@@ -6,12 +6,12 @@ bool parse_mouse(SdlServer *s, char *action) {
     if (!strcmp(action, "get")) {
         char *p3 = strtok(NULL, " ");
         if (!strcmp(p1, "x") && !p2) {
-            // get mouse x -> <bool>
+            // get mouse x -> <int>
             s->msg.type = SEND_INT;
             s->msg.i_val = s->game->mouse_x;
             return true;
         } else if (!strcmp(p1, "y") && !p2) {
-            // get mouse y -> <bool>
+            // get mouse y -> <int>
             s->msg.type = SEND_INT;
             s->msg.i_val = s->game->mouse_y;
             return true;

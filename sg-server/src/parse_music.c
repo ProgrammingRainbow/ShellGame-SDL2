@@ -28,22 +28,6 @@ bool parse_music(SdlServer *s, char *action) {
             p1 = strtok(NULL, " ");
         }
         return true;
-    } else if (!strcmp(action, "update")) {
-        // update music <filename> {msc_id array}
-        char *p2 = strtok(NULL, " ");
-        if (p2) {
-            while (p2) {
-                int msc_id = 0;
-                if (!str_to_id(&s->game->music, p2, &msc_id, s->orig_str)) {
-                    return false;
-                }
-                if (!music_update(s->game, msc_id, p1)) {
-                    return false;
-                }
-                p2 = strtok(NULL, " ");
-            }
-            return true;
-        }
     } else if (!strcmp(action, "set") && p1) {
         char *p2 = strtok(NULL, " ");
         if (!p2) {
@@ -60,6 +44,19 @@ bool parse_music(SdlServer *s, char *action) {
                 Mix_HaltMusic();
                 return true;
             }
+        } else {
+            // set music <filename> {msc_id array}
+            while (p2) {
+                int msc_id = 0;
+                if (!str_to_id(&s->game->music, p2, &msc_id, s->orig_str)) {
+                    return false;
+                }
+                if (!music_update(s->game, msc_id, p1)) {
+                    return false;
+                }
+                p2 = strtok(NULL, " ");
+            }
+            return true;
         }
     } else if (!strcmp(action, "get") && p1) {
         char *p2 = strtok(NULL, " ");

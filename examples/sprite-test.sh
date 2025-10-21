@@ -104,16 +104,19 @@ while true; do
     (( pressed[1] )) && sg_cmd "set sg fullscreen toggle"
 
     if (( pressed[w] )); then
-        sg_cmd "update sprite image examples/images/white.png ${sprites[*]}"
+        sg_cmd "set sprite image examples/images/white.png ${sprites[*]}"
         sg_cmd "set sprite size $size $size ${sprites[*]}"
+        sg_cmd "set sg icon examples/images/white.png"
     fi
     if (( pressed[y] )); then
-        sg_cmd "update sprite image examples/images/yellow.png ${sprites[*]}"
+        sg_cmd "set sprite image examples/images/yellow.png ${sprites[*]}"
         sg_cmd "set sprite size $size $size ${sprites[*]}"
+        sg_cmd "set sg icon examples/images/yellow.png"
     fi
     if (( pressed[s] )); then
-        sg_cmd "update sprite image examples/images/player.png ${sprites[*]}"
+        sg_cmd "set sprite image examples/images/player.png ${sprites[*]}"
         sg_cmd "set sprite size $size $size ${sprites[*]}"
+        sg_cmd "set sg icon examples/images/player.png"
     fi
 
     sg_cmd "arr key held left right up down"
