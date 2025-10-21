@@ -1,6 +1,59 @@
 # ShellGame (SDL2)
 ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game.
 
+---
+
+## Install on archlinux
+Install sdl2 and friends.
+```
+sudo pacman -S sdl2 sdl2_image sdl2_mixer sdl2_ttf
+```
+Clone ShellGame-SDL2 repo.
+```
+cd
+git clone https://github.com/ProgrammingRainbow/ShellGame-SDL2
+```
+Build ShellGame server.
+```
+cd ShellGame-SDL2
+make -C sg-server release
+```
+Optional but very slow client.
+```
+make -C sg-client release
+```
+Try out an example using the named pipe backend.
+```
+bash examples/yellow-snow.sh --pipe
+```
+
+## Install on MacOS
+Install sdl2 and friends. For the socket backend install socat too.
+```
+brew install sdl2 sdl2_image sdl2_mixer sdl2_ttf socat
+```
+Clone ShellGame-SDL2 repo.
+```
+cd
+git clone https://github.com/ProgrammingRainbow/ShellGame-SDL2
+```
+Build ShellGame server.
+There currently is a bug in sdl2. if it doesn't compile with my strict rules try running make without release.
+```
+cd ShellGame-SDL2
+make -C sg-server release
+```
+Optional but very slow client.
+```
+make -C sg-client release
+```
+Try out an example using the named pipe backend.
+```
+bash examples/yellow-snow.sh --pipe
+```
+
+---
+
 ## ShellGame Usage
 - One of the server scripts must be sourced to start the server, establish communication, and define the sg_cmd function.
 - All commands listed below are passed as a string to the sg_cmd function.
