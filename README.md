@@ -84,7 +84,15 @@ These settings are applied to new or updated images/sprites/text. Not existing o
 |----------------------------------------|-------------|
 | `set sg scaling nearest`               | Sets pixel scaling to nearest for pixel art style. |
 | `set sg scaling linear`                | Sets pixel scaling to linear for smooth style. |
-
+ new text <font> <size> <string> -> <txt_id>
+ draw text {txt_id array}
+ update text pos <x_vel> <y_vel> {txt_id array}
+ update text angle <angle> {txt_id array}
+ update text (x|y) <float> {rect_id array}
+ set text string <txt_id> <string>
+ set text font <txt_id> <font> <size>
+ set text color <txt_id> <r> <g> <b>
+ set text color <txt_id> <r> <g> <b> <a>
 ---
 
 ## ShellGame FPS Commands
@@ -98,16 +106,103 @@ These settings are applied to new or updated images/sprites/text. Not existing o
 
 ## Creating new ShellGame objects.
 
-| Command                                | Description |
-|----------------------------------------|-------------|
-| `new image <filename>` → `<img_id>`                  | Creates an image object from an image file. |
-| `new rect` → `<rect_id>`                             | Creates a rectangle with all zeros. |
-| `new rect image <img_id>` → `<rect_id>`              | Creates a rectangle with width and height populated from an image. |
-| `new rect <x> <y> <w> <h>` → `<rect_id>`             | Creates a rectangle with position and size set. |
-| `new sprite <filename>` → `<sprt_id>`                | Creates a sprite(image and rect) from an image file. |
-| `new text <font> <size> <string>` → `<txt_id>`       | Creates a text object with font, size, and a string. |
-| `new music <filename>` → `<mus_id>`                  | Creates a music object from a music file. |
-| `new sound <filename>` → `<snd_id>`                  | Creates a sound object from a sound file. |
+| Command                                         | Description |
+|-------------------------------------------------|-------------|
+| `new image <filename>` → `<img_id>`             | Creates an image object from an image file. |
+| `new rect` → `<rect_id>`                        | Creates a rect object with `[x,y,w,h]` all set to zero. |
+| `new rect image <img_id>` → `<rect_id>`         | Creates a rect object with and height populated from an image. |
+| `new rect <x> <y> <w> <h>` → `<rect_id>`        | Creates a rect object with position and size set. |
+| `new sprite <filename>` → `<sprt_id>`           | Creates a new sprite object from an image file. |
+| `new text <font> <size> <string>` → `<txt_id>`  | Creates a text object with font, size, and a string. |
+| `new music <filename>` → `<mus_id>`             | Creates a music object from a music file. |
+| `new sound <filename>` → `<snd_id>`             | Creates a sound object from a sound file. |
+
+---
+
+## Free/Delete Objects
+This command works with all ShellGame object <type>.
+| Command                                  | Description |
+|------------------------------------------|-------------|
+| `free <type> {id array}` → `{id array}`  | Frees each object and returns an array their rest ids. |
+
+
+---
+
+## Text objects
+Text objects have there own rect and angle. All commands like update, set, or get work with text objects.
+All commands apply immediatly to the text object. Setting a new font will cause the internal texture to be regenerated.
+| Command                                         | Description |
+|-------------------------------------------------|-------------|
+| `new text <font> <size> <string>` → `<txt_id>`  | Creates a text object with font, size, and a string. |
+| `draw text {txt_id array}`                      | Draws a text object using it own rect and angle. Applies to each space separated id. | 
+| `set text string <txt_id> <string>`             | Sets a string for a text object. Everything after the id will be the string. |
+| `set text font <txt_id> <font> <size>`          | Sets the font and size of a text object. |
+| `set text color <txt_id> <r> <g> <b>`           | Sets the color of a text object. |
+| `set text color <txt_id> <r> <g> <b> <a>`       | Same as above but with an alpha option. |
+| `free <type> {id array}` → `{id array}`         | Frees each object and returns an array of their rest ids. |
+
+---
+
+## Sprite Objects
+
+| Command                                            | Description |
+|----------------------------------------------------|-------------|
+| `new sprite <filename>` → `<sprt_id>`              | Creates a new sprite object from an image file. |
+| `draw sprite {sprt_id array}`                      | Draws a sprite object using it own rect and angle. Applies to each space separated id. |
+| `set sprite image <filename> {sprt_id array}`      | Sets the sprite to the new image filename. |
+| `free sprite {sprt_id array}` → `{sprt_id array}`  | Frees each object and returns an array of their rest ids. |
+
+---
+
+## Image Objects
+
+| Command                                                        | Description |
+|----------------------------------------------------------------|-------------|
+| `new image <filename>` → `<img_id>`                            | Creates a new image object from an image file. |
+| `draw image <src_id> <dest_id> {img_id array}`                 | Draws an image object using source and destination rect objects. Optionally NULL can be used for the source rect id. Applies to all space separated image ids. |
+| `set image <filename> {img_id array}`                          | Sets the image to the new image filename. |
+| `get image <attribute> <img_id>` → `<int>`                     | Gets a single attribute (w,width,h,height) from an image id. | 
+| `arr image size <img_id>` → `{int array}`                      | Returns an array `[w,h]` for an image id.
+| `arr image <attribute> {img_id array}` → `{int array}`         | Returns an array of attribute (w,width,h,height) for each space separated image id. |
+| `free image {img_id array}` → `{img_id array}`                 | Frees each object and returns an array of their rest ids. |
+
+---
+
+## Rect Objects
+
+| Command                                          | Description |
+|--------------------------------------------------|-------------|
+| `new rect` → `<rect_id>`                         | Creates a rect object with `[x,y,w,h]` all set to zero. |
+| `new rect image <img_id>` → `<rect_id>`          | Creates a rect object with and height populated from an image. |
+| `new rect <x> <y> <w> <h>` → `<rect_id>`         | Creates a rect object with position and size set. |
+| `free rect {rect_id array}` → `{rect_id array}`  | Frees each object and returns an array of their rest ids. |
+
+---
+
+## Sound Objects
+
+| Command                                         | Description |
+|-------------------------------------------------|-------------|
+| `new sound <filename>` → `<snd_id>`             | Creates a new sound object from a sound file. |
+| `play sound {snd_id array}`                     | Plays a sound. |
+| `set sound <filename> {snd_id array}`           | Sets the sound obeject to a new sound file. |
+| `free sound {snd_id array}` → `{snd_id array}`  | Frees each object and returns an array of their rest ids. |
+
+---
+
+## Music Objects
+
+| Command                                         | Description |
+|-------------------------------------------------|-------------|
+| `new music <filename>` → `<msc_id>`             | Creates a new music object from a music file. |
+| `play music <msc_id>`                           | Plays a music object.
+| `set music <filename> {msc_id array}`           | Sets the music object to a new music file. |
+| `set music pause`                               | Pauses playing music. |
+| `set music resume`                              | Resumes playing of paused music. |
+| `set music halt`                                | Halts music if playing. |
+| `get music paused` → `<bool>`                   | Returns if music is paused or not. |
+| `get music playing` → `<bool>`                  | Returns if music is playing or not. |
+| `free music {msc_id array}` → `{msc_id array}`  | Frees each object and returns an array of their rest ids. |
 
 ---
 
@@ -144,21 +239,11 @@ These commands work with the object <type> rect, sprite, and image.
 ---
 
 ## Array of Position, Size, or Rotation Properties.
-
-| Command Format                          | Description |
-|----------------------------------------|-------------|
-| `arr <type> pos <id>` → `{int array}`          | Returns an array of x and y. |
-| `arr <type> angle {id array}` → `{int array}`  | Returns and array of angles. One for each object id. |
-| `arr <type> size <id>` → `{int array}`         | Returns an array of width and height. |
-| `arr <type> rect <id>` → `{int array}`         | Returns full rectangle `[l, t, r, b]`. |
-| `arr <type> <attribute> {id array}`            | Returns and array an attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
-
----
-
-## Free/Delete
-
-| Command Format                          | Description |
-|----------------------------------------|-------------|
-| `free <type> {id array}`               | Frees the object(s) and returns their IDs. |
-
----
+These commands work with the object <type> rect, sprite, and image.
+| Command                                              | Description |
+|------------------------------------------------------|-------------|
+| `arr <type> pos <id>` → `{int array}`                | Returns an array of `[x,y]`. |
+| `arr <type> angle {id array}` → `{int array}`        | Returns and array of angles. One for each object id. |
+| `arr <type> size <id>` → `{int array}`               | Returns an array of `[w,h]`. |
+| `arr <type> rect <id>` → `{int array}`               | Returns full rectangle `[x, y, w, h, r, b, cx, cy]`. |
+| `arr <type> <attribute> {id array}` → `{int array}`  | Returns and array an attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
