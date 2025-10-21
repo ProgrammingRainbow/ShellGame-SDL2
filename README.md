@@ -1,5 +1,5 @@
 # ShellGame (SDL2)
-ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game.
+ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game. ShellGame works in Linux and MacOS, using Bash or zsh. The communication backends are --pipe, --stdinout, --socket, --shared(Linux only), --client(Linux only). Shared is much slower and client is 100 times slower.
 
 ![Screenshot](screenshot.png)
 ![Screenshot](screenshot1.png)
@@ -45,13 +45,9 @@ There currently is a bug in sdl2. if it doesn't compile with my strict rules try
 cd ShellGame-SDL2
 make -C sg-server release
 ```
-Optional but very slow client.
-```
-make -C sg-client release
-```
 Try out an example using the named pipe backend.
 ```
-bash examples/yellow-snow.sh --pipe
+zsh examples/yellow-snow.sh --pipe
 ```
 
 ---
