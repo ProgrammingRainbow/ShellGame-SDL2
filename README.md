@@ -84,23 +84,52 @@ These settings are applied to new or updated images/sprites/text. Not existing o
 |----------------------------------------|-------------|
 | `set sg scaling nearest`               | Sets pixel scaling to nearest for pixel art style. |
 | `set sg scaling linear`                | Sets pixel scaling to linear for smooth style. |
- new text <font> <size> <string> -> <txt_id>
- draw text {txt_id array}
- update text pos <x_vel> <y_vel> {txt_id array}
- update text angle <angle> {txt_id array}
- update text (x|y) <float> {rect_id array}
- set text string <txt_id> <string>
- set text font <txt_id> <font> <size>
- set text color <txt_id> <r> <g> <b>
- set text color <txt_id> <r> <g> <b> <a>
+
 ---
 
 ## ShellGame FPS Commands
 
-| Command                    | Description |
+| Command                   | Description |
 |---------------------------|-------------|
 | `set sg fps <int>`        | Sets the target frames per second. |
 | `get sg fps` → `<int>`    | Retrieves the current frame rate. Updated every second. |
+
+---
+
+## Render Commands
+All drawing should be done between these commands.
+| Command                   | Description |
+|---------------------------|-------------|
+| `set render clear`        | Clear the ShellGame renderer. |
+| `set render present`      | Present the ShellGame renderer. |
+
+---
+
+## Key Commands
+
+| Command                                              | Description |
+|------------------------------------------------------|-------------|
+| `get key (h,held) <key>` → `<bool>`                  | Returns if a key is held. |
+| `get key (p,pressed) <key>` → `<bool>`               | Returns if a key was pressed. |
+| `get key (r,released) <key>` → `<bool>`              | Returns if a key was released. |
+| `arr key (h,held) {key array}` → `{bool array}`      | Returns an array of bools for a space separated array of keys held. |
+| `arr key (p,pressed) {key array}` → `{bool array}`   | Returns an array of bools for a space separated array of keys pressed. |
+| `arr key (r,released) {key array}` → `{bool array}`  | Returns an array of bools for a space separated array of keys released. |
+
+---
+
+## Mouse Commands
+
+| Command                                                   | Description |
+|-----------------------------------------------------------|-------------|
+| `get mouse (x,y)` → `<int>`                               | Returns the x or y mouse position. |
+| `get mouse (h,held) <button>` → `<bool>`                  | Returns if a mouse button is held. |
+| `get mouse (p,pressed) <button>` → `<bool>`               | Returns if a mouse button is pressed. |
+| `get mouse (r,released) <button>` → `<bool>`              | Returns if a mouse button is released. |
+| `arr mouse (h,held) {button array}` → `{bool array}`      | Returns an array of bools for a space separated array of mouse buttons held. |
+| `arr mouse (p,pressed) {button array}` → `{bool array}`   | Returns an array of bools for a space separated array of mouse buttons pressed. |
+| `arr mouse (r,released) {button array}` → `{bool array}`  | Returns an array of bools for a space separated array of mouse buttons released. |
+| `arr mouse pos` → `{int array}`                           | Returns an array `[x,y]` of the mouse position. |
 
 ---
 
@@ -247,3 +276,5 @@ These commands work with the object <type> rect, sprite, and image.
 | `arr <type> size <id>` → `{int array}`               | Returns an array of `[w,h]`. |
 | `arr <type> rect <id>` → `{int array}`               | Returns full rectangle `[x, y, w, h, r, b, cx, cy]`. |
 | `arr <type> <attribute> {id array}` → `{int array}`  | Returns and array an attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
+
+---
