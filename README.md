@@ -29,6 +29,8 @@ Try out an example using the named pipe backend.
 bash examples/yellow-snow.sh --pipe
 ```
 
+---
+
 ## Install on MacOS
 Install sdl2 and friends. For the socket backend install socat too.
 ```
