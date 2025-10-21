@@ -96,6 +96,69 @@ These settings are applied to new or updated images/sprites/text. Not existing o
 
 ---
 
+## Creating new ShellGame objects.
 
+| Command                                | Description |
+|----------------------------------------|-------------|
+| `new image <filename>` → `<img_id>`                  | Creates an image object from an image file. |
+| `new rect` → `<rect_id>`                             | Creates a rectangle with all zeros. |
+| `new rect image <img_id>` → `<rect_id>`              | Creates a rectangle with width and height populated from an image. |
+| `new rect <x> <y> <w> <h>` → `<rect_id>`             | Creates a rectangle with position and size set. |
+| `new sprite <filename>` → `<sprt_id>`                | Creates a sprite(image and rect) from an image file. |
+| `new text <font> <size> <string>` → `<txt_id>`       | Creates a text object with font, size, and a string. |
+| `new music <filename>` → `<mus_id>`                  | Creates a music object from a music file. |
+| `new sound <filename>` → `<snd_id>`                  | Creates a sound object from a sound file. |
 
+---
 
+## Updating using Delta Time
+These commands work with the object <type> rect, sprite, and image.
+| Command                                        | Description |
+|------------------------------------------------|-------------|
+| `update <type> pos <x_vel> <y_vel> {id array}` | Moves object with x and y velocity using delta time. Applies to each space separated id. |
+| `update <type> <attribute> <float> {id array}` | Same as above but with either x or y attribute. |
+| `update <type> angle <angle> {id array}`       | Rotates objects by angle using delta time. Applies to each space separated id. |
+
+---
+
+## Set Position, Size, and Rotation Properties
+These commands work with the object <type> rect, sprite, and image. All commands are applied to each space separated id.
+| Command                                       | Description |
+|-----------------------------------------------|-------------|
+| `set <type> pos <x> <y> {id array}`           | Sets the x and y position for each id. |
+| `set <type> angle <angle> {id array}`         | Sets a rotation angle for each id. |
+| `set <type> flip <flip> {id array}`           | Sets horizontal, vertical, or none flip (h,v,n) for each id. |
+| `set <type> size <width> <height> {id array}` | Sets object width and height for each id. |
+| `set <type> <attribute> <float> {id array}`   | Sets a single attribute (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) for each id. |
+
+---
+
+## Get Position, Size, or Rotation Property.
+These commands work with the object <type> rect, sprite, and image.
+| Command                                | Description |
+|----------------------------------------|-------------|
+| `get <type> <attribute> <id>` → `int`  | Gets an attribute (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) |
+| `get <type> angle <id>` → `int`        | Gets the rotation angle as an int. |
+| `getf <type> angle <id>` → `float`     | Gets the rotation angle as a float. |
+
+---
+
+## Array of Position, Size, or Rotation Properties.
+
+| Command Format                          | Description |
+|----------------------------------------|-------------|
+| `arr <type> pos <id>` → `{int array}`          | Returns an array of x and y. |
+| `arr <type> angle {id array}` → `{int array}`  | Returns and array of angles. One for each object id. |
+| `arr <type> size <id>` → `{int array}`         | Returns an array of width and height. |
+| `arr <type> rect <id>` → `{int array}`         | Returns full rectangle `[l, t, r, b]`. |
+| `arr <type> <attribute> {id array}`            | Returns and array an attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
+
+---
+
+## Free/Delete
+
+| Command Format                          | Description |
+|----------------------------------------|-------------|
+| `free <type> {id array}`               | Frees the object(s) and returns their IDs. |
+
+---
