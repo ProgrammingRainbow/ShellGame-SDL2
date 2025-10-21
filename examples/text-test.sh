@@ -113,18 +113,18 @@ while true; do
     (( pressed[w] )) && sg_cmd "set sg fullscreen toggle"
     (( pressed[f] )) && fps=$(( 1 - fps ))
 
-    for i in "${!texts[@]}"; do
+    for (( i = 0; i < ${#texts[@]}; i++ )); do
         sg_cmd "update text pos ${texts_xvel[$i]} ${texts_yvel[$i]} ${texts[$i]}"
     done
 
     if (( mode == 9 )); then
-        for i in "${!texts[@]}"; do
+        for (( i = 0; i < ${#texts[@]}; i++ )); do
             sg_cmd "update text angle ${texts_avel[$i]} ${texts[$i]}"
         done
     fi
 
     if (( mode == 1 || mode == 2 || mode == 5 || mode == 6)); then
-        for i in "${!texts[@]}"; do
+        for (( i = 0; i < ${#texts[@]}; i++ )); do
             sg_cmd "get text t ${texts[$i]}"
             if (( texts_yvel[i] < 0 && reply < 0 )); then
                 texts_yvel[i]=$(( -texts_yvel[i] ))
@@ -151,7 +151,7 @@ while true; do
             fi
         done
     elif (( mode == 3 || mode == 7 )); then
-        for i in "${!texts[@]}"; do
+        for (( i = 0; i < ${#texts[@]}; i++ )); do
             sg_cmd "arr text rect ${texts[$i]}"
             txt_rect[l]=${array[0]}
             txt_rect[t]=${array[1]}
@@ -186,7 +186,7 @@ while true; do
         sg_cmd "arr text r ${texts[*]}"
         texts_r=("${array[@]}")
 
-        for i in "${!texts[@]}"; do
+        for (( i = 0; i < ${#texts[@]}; i++ )); do
             if (( texts_yvel[$i] < 0 && texts_t[$i] < 0 )); then
                 texts_yvel[i]=$(( -texts_yvel[$i] ))
             elif (( texts_yvel[$i] > 0 && texts_b[$i] > $height )); then
@@ -211,7 +211,7 @@ while true; do
     sg_cmd "set render clear"
 
     if (( mode == 1 || mode == 5 )); then
-        for i in "${!texts[@]}"; do
+        for (( i = 0; i < ${#texts[@]}; i++ )); do
             sg_cmd "draw text ${texts[$i]}"
         done
     else

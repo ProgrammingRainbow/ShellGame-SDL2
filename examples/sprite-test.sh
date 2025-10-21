@@ -137,7 +137,7 @@ while true; do
         sg_cmd "set sprite size $size $size ${sprites[*]}"
     fi
 
-    for i in "${!sprites[@]}"; do
+    for (( i = 0; i < ${#sprites[@]}; i++ )); do
         sg_cmd "update sprite pos ${sprites_xvel[$i]} ${sprites_yvel[$i]} ${sprites[$i]}"
     done
 
@@ -150,7 +150,7 @@ while true; do
     sg_cmd "arr sprite right ${sprites[*]}"
     sprites_r=("${array[@]}")
 
-    for i in "${!sprites[@]}"; do
+    for (( i = 0; i < ${#sprites[@]}; i++ )); do
         if (( sprites_yvel[$i] < 0 && sprites_t[$i] < 0 )); then
             sprites_yvel[i]=$(( -sprites_yvel[$i] ))
         elif (( sprites_yvel[$i] > 0 && sprites_b[$i] > $height )); then

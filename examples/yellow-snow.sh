@@ -51,7 +51,7 @@ declare -A held=(
     [right]=0
 )
 
-declare -A flake=(
+declare -A flake_rect=(
     [left]=0
     [right]=0
     [cy]=0
@@ -216,21 +216,21 @@ while true; do
         sg_cmd "update rect y $velocity ${flakes[*]}"
 
         # Loop over all flakes in the flakes array.
-        for i in "${!flakes[@]}"; do
+        for (( i = 0; i < ${#flakes[@]}; i++ )); do
 
             # Capture left right and cx in an associated array.
             sg_cmd "arr rect rect ${flakes[$i]}"
-            flake[left]=${array[0]}
-            flake[right]=${array[4]}
-            flake[cy]=${array[7]}
+            flake_rect[left]=${array[0]}
+            flake_rect[right]=${array[4]}
+            flake_rect[cy]=${array[7]}
 
             # If cy passes the ground reset the flake.
-            if (( flake[cy] > $ground )); then
+            if (( flake_rect[cy] > $ground )); then
                 flake_reset 0 ${flakes[$i]}
             # Using box collision test if a flake as hit the player.
-            elif (( flake[cy] > player_top )); then
-                if (( flake[right] > player_left )); then
-                    if (( flake[left] < player_right )); then
+            elif (( flake_rect[cy] > player_top )); then
+                if (( flake_rect[right] > player_left )); then
+                    if (( flake_rect[left] < player_right )); then
                         # If it's a yellow flake pause the music and game.
                         # Play hit sound.
                         if (( $i < 5)); then
@@ -271,7 +271,7 @@ while true; do
     sg_cmd "draw text $score_text"
 
     # Loop over all the flakes and draw them.
-    for i in "${!flakes[@]}"; do
+    for (( i = 0; i < ${#flakes[@]}; i++ )); do
         if (( $i < 5)); then
             sg_cmd "draw image NULL ${flakes[$i]} $yellow_img"
         else

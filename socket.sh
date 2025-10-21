@@ -38,15 +38,16 @@ while [ ! -e "$SOCKET_PATH" ]; do
 done
 
 # Open bidirectional socket connection to server using socat coprocess.
-coproc SOCKET { socat - UNIX-CONNECT:"$SOCKET_PATH"; }
 if [ "$SG_SHELL" -eq 1 ]; then
     # Zsh assigns the coprocess file descriptor to $COPROC
+    coproc { socat - UNIX-CONNECT:"$SOCKET_PATH"; }
     # Write to socket.
-    exec 3>&"$SOCKET"
+    exec 3>&p
     # Read from socket.
-    exec 4<&SOCKET
+    exec 4<&p
 else
     # Bash version.
+    eval 'coproc SOCKET { socat - UNIX-CONNECT:"$SOCKET_PATH"; }'
     # Write to socket.
     exec 3>&"${SOCKET[1]}"
     # Read from socket.

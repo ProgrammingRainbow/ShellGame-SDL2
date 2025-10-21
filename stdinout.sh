@@ -24,15 +24,16 @@ if [ ! -e "$SERVER" ]; then
 fi
 
 # Start the server in a coprocess using --stdin mode.
-coproc SERVER_PROC { ./"$SERVER" --stdinout $$; }
 if [ "$SG_SHELL" -eq 1 ]; then
     # Zsh assigns the coprocess file descriptor to $SERVER_PROC
+    coproc { ./"$SERVER" --stdinout $$; }
     # Write to server's stdin
-    exec 3>&"$SERVER_PROC"
+    exec 3>&p
     # Read from server's stdout
-    exec 4<&SERVER_PROC
+    exec 4<&p
 else
     # Bash version.
+    eval 'coproc SERVER_PROC { ./"$SERVER" --stdinout $$; }'
     # Write to server's stdin
     exec 3>&"${SERVER_PROC[1]}"
     # Read from server's stdout
