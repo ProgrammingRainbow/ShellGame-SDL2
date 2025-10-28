@@ -70,7 +70,7 @@ text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"
 
-# sg_cmd "set sg fps 10000"
+sg_cmd "set sg fps 10000"
 
 while true; do
     sg_cmd "update sg"

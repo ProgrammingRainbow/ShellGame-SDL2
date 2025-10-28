@@ -39,7 +39,7 @@ declare -a flakes
 
 # Global Associative arrays.
 declare -A pressed=(
-[esc]=0
+    [esc]=0
     [f]=0
     [space]=0
     [w]=0
