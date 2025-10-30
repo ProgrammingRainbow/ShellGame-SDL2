@@ -19,7 +19,7 @@ SHUTDOWN_SERVER=1
 
 # Make sure the server is compiled.
 if [ ! -e "$SERVER" ]; then
-    echo "Error: $SERVER is missing. Try running 'make release'."
+    echo "Error: $SERVER is missing. Try running 'make -C sg-server release'."
     exit 1
 fi
 
@@ -67,12 +67,12 @@ sg_cmd() {
     # Read named pipe to global variable reply or array (Blocking).
     case "$1" in
         get*|new*)
-            read -r reply <&4
-            # read -r -u 4 reply
+            # read -r reply <&4
+            read -r -u 4 reply
             ;;
         arr*|free*)
-            read -r line <&4
-            # read -r -u 4 line
+            # read -r line <&4
+            read -r -u 4 line
             array=($line)
             ;;
     esac

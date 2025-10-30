@@ -138,6 +138,14 @@ void game_set_size(Game *g, int w, int h) {
     SDL_RenderSetLogicalSize(g->renderer, w, h);
 }
 
+void game_render_clear(Game *g) {
+    SDL_SetRenderDrawColor(g->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(g->renderer);
+    SDL_SetRenderDrawColor(g->renderer, g->render_color.r, g->render_color.g,
+                           g->render_color.b, g->render_color.a);
+    SDL_RenderFillRect(g->renderer, NULL);
+}
+
 bool game_update(Game *g) {
     while (SDL_PollEvent(&g->event)) {
         if (g->event.type == SDL_QUIT) {

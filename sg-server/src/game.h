@@ -20,6 +20,7 @@ typedef struct Game {
         Buffer music;
         struct Fps *fps;
         SDL_Event event;
+        SDL_Color render_color;
         float dt;
         const Uint8 *keystate;
         Uint8 prev_keystate[SDL_NUM_SCANCODES];
@@ -44,6 +45,7 @@ void game_free(struct Game *game);
 bool game_start(Game *g);
 bool game_icon(Game *g, const char *filename);
 void game_set_size(Game *g, int w, int h);
+void game_render_clear(Game *g);
 bool game_update(Game *g);
 bool game_key_press(Game *g, SDL_Scancode sc);
 bool game_key_release(Game *g, SDL_Scancode sc);

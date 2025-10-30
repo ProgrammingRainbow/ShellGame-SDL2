@@ -23,11 +23,16 @@ fi
 width=1280
 height=720
 player_vel=300
+player_normalized_vel=232
 sprite_vel=180
 sprite_y_vel=$sprite_vel
 sprite_x_vel=$sprite_vel
 fps=0
 pos=0
+fullscreen=0
+sound=0
+x_vel=0
+y_vel=0
 
 # Associated Arrays
 declare -A pressed=(
@@ -36,6 +41,8 @@ declare -A pressed=(
     [f]=0
     [p]=0
     [m]=0
+    [n]=0
+    [1]=0
 )
 
 declare -A held=(
@@ -51,6 +58,10 @@ declare -A held=(
 
 # Start ShellGame.
 sg_cmd "start sg"
+
+sg_cmd "set sg resizable enable"
+sg_cmd "set render scaling best"
+# sg_cmd "set render intscale enable"
 
 # Set the title to ShellGame.
 sg_cmd "set sg title Begginer's Guide to ShellGame"
@@ -131,12 +142,14 @@ while true; do
     sg_cmd "update sg"
 
     # Getting key pressed states as an array.
-    sg_cmd "arr key pressed esc space f p m"
+    sg_cmd "arr key pressed esc space f p m n 1"
     pressed[esc]=${array[0]}
     pressed[space]=${array[1]}
     pressed[f]=${array[2]}
     pressed[p]=${array[3]}
     pressed[m]=${array[4]}
+    pressed[n]=${array[5]}
+    pressed[1]=${array[6]}
 
     # Getting key held states as and array.
     sg_cmd "arr key held a s w d left down up right"
@@ -152,13 +165,23 @@ while true; do
     (( pressed[esc] )) && sg_quit 0
     (( pressed[f] )) && fps=$(( 1 - fps ))
     (( pressed[p] )) && pos=$(( 1 - pos ))
+    (( pressed[n] )) && sound=$(( 1 - sound ))
 
     if (( pressed[space] )); then
-        sg_cmd "play sound $bash_snd"
+        (( sound )) && sg_cmd "play sound $bash_snd"
         r=$(( RANDOM % 256 ))
         g=$(( RANDOM % 256 ))
         b=$(( RANDOM % 256 ))
         sg_cmd "set render color $r $g $b"
+    fi
+
+    if (( pressed[1] )); then
+        fullscreen=$(( 1 - fullscreen ))
+        if (( fullscreen )); then
+            sg_cmd "set sg fullscreen desktop"
+        else
+            sg_cmd "set sg fullscreen disable"
+        fi
     fi
 
     # Play or pause music toggle.
@@ -176,31 +199,41 @@ while true; do
         fi
     fi
 
-    # Moving the player sprite using a s w d or left down up right. h
-    (( held[a] || held[left] )) && sg_cmd "update sprite x -$player_vel $bash_sprt"
-    (( held[s] || held[down] )) && sg_cmd "update sprite y $player_vel $bash_sprt"
-    (( held[w] || held[up] )) && sg_cmd "update sprite y -$player_vel $bash_sprt"
-    (( held[d] || held[right] )) && sg_cmd "update sprite x $player_vel $bash_sprt"
+    # Moving the player sprite using a s w d or left down up right.
+    x_vel=0
+    y_vel=0
+    (( held[a] || held[left] )) && x_vel=-1 
+    (( held[s] || held[down] )) && y_vel=1
+    (( held[w] || held[up] )) && y_vel=-1
+    (( held[d] || held[right] )) && x_vel=1
+
+    if (( x_vel && y_vel )); then
+        sg_cmd "update sprite pos $(( x_vel * player_normalized_vel )) \
+            $(( y_vel * player_normalized_vel )) $bash_sprt"
+    else
+        sg_cmd "update sprite pos $(( x_vel * player_vel )) \
+            $(( y_vel * player_vel )) $bash_sprt"
+    fi
 
     sg_cmd "update sprite pos $sprite_x_vel $sprite_y_vel $zsh_sprt"
     sg_cmd "arr sprite rect $zsh_sprt"
     if (( array[0] < 0 )); then 
         sprite_x_vel=$sprite_vel
-        sg_cmd "play sound $zsh_snd"
+        (( sound )) && sg_cmd "play sound $zsh_snd"
     fi
     if (( array[4] > width )); then
         sprite_x_vel=-$sprite_vel
-        sg_cmd "play sound $zsh_snd"
+        (( sound )) && sg_cmd "play sound $zsh_snd"
     fi
 
     if (( array[1] < 0 )); then
         sprite_y_vel=$sprite_vel
-        sg_cmd "play sound $zsh_snd"
+        (( sound )) && sg_cmd "play sound $zsh_snd"
     fi
 
     if (( array[5] > height ));then
         sprite_y_vel=-$sprite_vel
-        sg_cmd "play sound $zsh_snd"
+        (( sound )) && sg_cmd "play sound $zsh_snd"
     fi
 
     # Clear the game renderer.

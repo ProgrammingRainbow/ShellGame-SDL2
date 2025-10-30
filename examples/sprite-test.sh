@@ -68,7 +68,7 @@ sg_cmd "set sg title Sprite Test."
 sg_cmd "set sg size $width $height"
 sg_cmd "set sg icon examples/images/yellow.png"
 
-# sg_cmd "set sg scaling linear"
+sg_cmd "set sg scaling best"
 
 for i in {0..399}; do
     sg_cmd "new sprite examples/images/yellow.png"

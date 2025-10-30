@@ -19,7 +19,7 @@ SHUTDOWN_SERVER=1
 
 # Make sure the server is compiled.
 if [ ! -e "$SERVER" ]; then
-    echo "Error: $SERVER is missing. Try running 'make release'."
+    echo "Error: $SERVER is missing. Try running 'make -C sg-server release'."
     exit 1
 fi
 

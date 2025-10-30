@@ -45,14 +45,29 @@ bool parse_sg(SdlServer *s, char *action) {
             }
             game_set_size(s->game, w, h);
             return true;
+        } else if (!strcmp(p1, "resizable") && p2 && !p3) {
+            if (!strcmp(p2, "enable")) {
+                // set sg resizable enable
+                SDL_SetWindowResizable(s->game->window, SDL_TRUE);
+                return true;
+            } else if (!strcmp(p2, "disable")) {
+                // set sg resizable disable
+                SDL_SetWindowResizable(s->game->window, SDL_FALSE);
+                return true;
+            }
         } else if (!strcmp(p1, "fullscreen") && p2 && !p3) {
             if (!strcmp(p2, "enable")) {
                 // set sg fullscreen enable
-                SDL_SetWindowFullscreen(s->game->window, true);
+                SDL_SetWindowFullscreen(s->game->window, SDL_WINDOW_FULLSCREEN);
+                return true;
+            } else if (!strcmp(p2, "desktop")) {
+                // set sg fullscreen desktop
+                SDL_SetWindowFullscreen(s->game->window,
+                                        SDL_WINDOW_FULLSCREEN_DESKTOP);
                 return true;
             } else if (!strcmp(p2, "disable")) {
                 // set sg fullscreen disable
-                SDL_SetWindowFullscreen(s->game->window, false);
+                SDL_SetWindowFullscreen(s->game->window, 0);
                 return true;
             } else if (!strcmp(p2, "toggle")) {
                 // set sg fullscreen toggle
@@ -62,15 +77,6 @@ bool parse_sg(SdlServer *s, char *action) {
                 } else {
                     SDL_SetWindowFullscreen(s->game->window, true);
                 }
-                return true;
-            }
-        } else if (!strcmp(p1, "scaling") && p2 && !p3) {
-            // set sg scaling (nearest|linear)
-            if (!strcmp(p2, "nearest")) {
-                s->game->scale_mode = SDL_ScaleModeNearest;
-                return true;
-            } else if (!strcmp(p2, "linear")) {
-                s->game->scale_mode = SDL_ScaleModeLinear;
                 return true;
             }
         } else if (!strcmp(p1, "fps") && p2 && !p3) {
