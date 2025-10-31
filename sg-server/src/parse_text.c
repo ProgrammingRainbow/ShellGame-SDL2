@@ -3,10 +3,33 @@
 bool parse_text(SdlServer *s, char *action) {
     char *p1 = strtok(NULL, " ");
     if (!strcmp(action, "new")) {
-        // new text <font> <size> <string> -> <txt_id>
         char *p2 = strtok(NULL, " ");
         char *p3 = strtok(NULL, " ");
-        if (p3) {
+
+        if (!strcmp(p1, "bubble")) {
+            // new text bubble <font> <size> <radius> <string> -> <txt_id>
+            char *p4 = strtok(NULL, " ");
+            char *p5 = strtok(NULL, " ");
+            if (p5) {
+                int size = 0;
+                if (!str_to_i(p3, &size, s->orig_str)) {
+                    return false;
+                }
+                Uint8 radius = 0;
+                if (!str_to_u8(p4, &radius, s->orig_str)) {
+                    return false;
+                }
+                char *str = (p5 - action) + s->orig_str;
+                int txt_id = 0;
+                if (!text_bubble_new(s->game, &txt_id, p2, size, str, radius)) {
+                    return false;
+                }
+                s->msg.type = SEND_INT;
+                s->msg.i_val = txt_id;
+                return true;
+            }
+        } else if (p3) {
+            // new text <font> <size> <string> -> <txt_id>
             int size = 0;
             if (!str_to_i(p2, &size, s->orig_str)) {
                 return false;
@@ -149,7 +172,8 @@ bool parse_text(SdlServer *s, char *action) {
             }
             if (p5 && !p6) {
                 // set text color <txt_id> <r> <g> <b>
-                text_set_color(s->game, txt_id, r, g, b, 255);
+                SDL_Color inner_color = {r, g, b, 255};
+                text_set_color(s->game, txt_id, inner_color, 255);
                 return true;
             } else if (p6 && !p7) {
                 // set text color <txt_id> <r> <g> <b> <a>
@@ -157,7 +181,63 @@ bool parse_text(SdlServer *s, char *action) {
                 if (!str_to_u8(p6, &a, s->orig_str)) {
                     return false;
                 }
-                text_set_color(s->game, txt_id, r, g, b, a);
+                SDL_Color inner_color = {r, g, b, 255};
+                text_set_color(s->game, txt_id, inner_color, a);
+                return true;
+            }
+        } else if (!strcmp(p1, "colors")) {
+            char *p4 = strtok(NULL, " ");
+            char *p5 = strtok(NULL, " ");
+            char *p6 = strtok(NULL, " ");
+            char *p7 = strtok(NULL, " ");
+            char *p8 = strtok(NULL, " ");
+            char *p9 = strtok(NULL, " ");
+            char *p10 = strtok(NULL, " ");
+            int txt_id = 0;
+            if (!str_to_id(&s->game->texts, p2, &txt_id, s->orig_str)) {
+                return false;
+            }
+            Uint8 c1 = 0;
+            if (!str_to_u8(p3, &c1, s->orig_str)) {
+                return false;
+            }
+            Uint8 c2 = 0;
+            if (!str_to_u8(p4, &c2, s->orig_str)) {
+                return false;
+            }
+            Uint8 c3 = 0;
+            if (!str_to_u8(p5, &c3, s->orig_str)) {
+                return false;
+            }
+            Uint8 c4 = 0;
+            if (!str_to_u8(p6, &c4, s->orig_str)) {
+                return false;
+            }
+            Uint8 c5 = 0;
+            if (!str_to_u8(p7, &c5, s->orig_str)) {
+                return false;
+            }
+            Uint8 c6 = 0;
+            if (!str_to_u8(p8, &c6, s->orig_str)) {
+                return false;
+            }
+            if (p8 && !p9) {
+                // set text colors <txt_id> <inner_r> <inner_g> <inner_b>
+                // <outer_r> <outer_b> <outer_b>
+                SDL_Color inner_color = {c1, c2, c3, 255};
+                SDL_Color outer_color = {c4, c5, c6, 255};
+                text_set_colors(s->game, txt_id, inner_color, outer_color, 255);
+                return true;
+            } else if (p9 && !p10) {
+                // set text colors <txt_id> <inner_r> <inner_g> <inner_b>
+                // <outer_r> <outer_b> <outer_b> <alpha>
+                Uint8 c7 = 0;
+                if (!str_to_u8(p9, &c7, s->orig_str)) {
+                    return false;
+                }
+                SDL_Color inner_color = {c1, c2, c3, 255};
+                SDL_Color outer_color = {c4, c5, c6, 255};
+                text_set_colors(s->game, txt_id, inner_color, outer_color, c7);
                 return true;
             }
         } else if (!strcmp(p1, "pos") && p3) {

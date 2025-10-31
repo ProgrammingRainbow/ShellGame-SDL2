@@ -27,12 +27,16 @@ player_top=0
 player_left=0
 player_right=0
 flake_size=0
-text_size=30
+text_size=40
+text_bubble_size=5
 ground=535
 velocity=300
 score=0
 playing=1
 fps=0
+fps_size=40
+fps_bubble_size=5
+fullscreen=0
 
 # Global arrays
 declare -a flakes
@@ -71,6 +75,11 @@ flake_reset() {
 
 # Tell server to start ShellGame.
 sg_cmd "start sg"
+# sg_cmd "set sg scale 1.5"
+
+sg_cmd "set sg resizable enable"
+sg_cmd "set render scaling best"
+# sg_cmd "set render intscale enable"
 
 # Optionally set Window attributes.
 sg_cmd "set sg title Don't eat the Yellow Snow!"
@@ -117,7 +126,7 @@ for i in {0..15}; do
 done
 
 # Create a new Text object.
-sg_cmd "new text examples/fonts/freesansbold.ttf $text_size Score: $score"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $text_bubble_size Score: $score"
 score_text=$reply
 
 # Set the Text to anchor in the top right.
@@ -138,14 +147,14 @@ music=$reply
 sg_cmd "play music $music"
 
 # Create a text object for displaying the FPS.
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf $fps_size $fps_bubble_size FPS: 0"
 text_fps=$reply
 
 # Set the FPS Text object anchord to the top left.
 sg_cmd "set text pos 10 10 $text_fps"
 
 # Override the default 60fps
-sg_cmd "set sg fps 10000"
+# sg_cmd "set sg fps 10000"
 
 # Main game loop. 
 while true; do
@@ -165,7 +174,15 @@ while true; do
 
     # Toggle show fps and fullscreen.
     (( pressed[f] )) && fps=$(( 1 - fps ))
-    (( pressed[w] )) && sg_cmd "set sg fullscreen toggle"
+
+    if (( pressed[w] )); then
+        fullscreen=$(( 1 - fullscreen ))
+        if (( fullscreen )); then
+            sg_cmd "set sg fullscreen desktop"
+        else
+            sg_cmd "set sg fullscreen disable"
+        fi
+    fi
 
     # Toggle playing the music. If game is not in playing state pause music.
     if (( pressed[m] )); then
@@ -270,6 +287,13 @@ while true; do
     sg_cmd "draw sprite $player"
     sg_cmd "draw text $score_text"
 
+    # Update the FPS text and display it if enabled.
+    if (( fps )); then
+        sg_cmd "get sg fps"
+        sg_cmd "set text string $text_fps FPS: $reply"
+        sg_cmd "draw text $text_fps"
+    fi
+
     # Loop over all the flakes and draw them.
     for (( i = 0; i < ${#flakes[@]}; i++ )); do
         if (( $i < 5)); then
@@ -278,13 +302,6 @@ while true; do
             sg_cmd "draw image NULL ${flakes[$i]} $white_img"
         fi
     done
-
-    # Update the FPS text and display it if enabled.
-    if (( fps )); then
-        sg_cmd "get sg fps"
-        sg_cmd "set text string $text_fps FPS: $reply"
-        sg_cmd "draw text $text_fps"
-    fi
 
     # Present the populated renderer.
     sg_cmd "set render present"

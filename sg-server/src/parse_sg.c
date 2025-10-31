@@ -45,6 +45,14 @@ bool parse_sg(SdlServer *s, char *action) {
             }
             game_set_size(s->game, w, h);
             return true;
+        } else if (!strcmp(p1, "scale") && p2 && !p3) {
+            // set sg scale
+            float scale = 0;
+            if (!str_to_f(p2, &scale, s->orig_str)) {
+                return false;
+            }
+            game_set_scale(s->game, scale);
+            return true;
         } else if (!strcmp(p1, "resizable") && p2 && !p3) {
             if (!strcmp(p2, "enable")) {
                 // set sg resizable enable

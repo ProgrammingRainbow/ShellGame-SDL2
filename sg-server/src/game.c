@@ -19,6 +19,7 @@ Game *game_new(void) {
 
     game->width = WINDOW_WIDTH;
     game->height = WINDOW_HEIGHT;
+    game->scale = 1;
 
     game->images.elem_size = sizeof(Image);
     game->images.inc_size = 10;
@@ -134,8 +135,20 @@ void game_set_size(Game *g, int w, int h) {
     g->width = w;
     g->height = h;
 
-    SDL_SetWindowSize(g->window, w, h);
+    SDL_SetWindowSize(g->window, (int)(g->scale * (float)w),
+                      (int)(g->scale * (float)h));
     SDL_RenderSetLogicalSize(g->renderer, w, h);
+    SDL_SetWindowPosition(g->window, SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED);
+}
+
+void game_set_scale(Game *g, float scale) {
+    g->scale = scale;
+
+    SDL_SetWindowSize(g->window, (int)(scale * (float)g->width),
+                      (int)(scale * (float)g->height));
+    SDL_SetWindowPosition(g->window, SDL_WINDOWPOS_CENTERED,
+                          SDL_WINDOWPOS_CENTERED);
 }
 
 void game_render_clear(Game *g) {

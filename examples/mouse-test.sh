@@ -19,8 +19,11 @@ else
     exit 1
 fi
 
+width=1280
+height=720
 mode=1
 fps=0
+fullscreen=0
 
 declare -A mouse_button=(
     [button1]=0
@@ -38,53 +41,70 @@ declare -A pressed=(
     [f]=0
     [1]=0
     [2]=0
+    [3]=0
 )
 
 sg_cmd "start sg"
 sg_cmd "set sg title Test Mouse"
+sg_cmd "set sg size $width $height"
+sg_cmd "set sg resizable enable"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 Button 1: 0"
+sg_cmd "set render scaling best"
+sg_cmd "set render color 128 46 46"
+
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 1: 0"
 text_mouse1=$reply
-sg_cmd "set text cy 100 $text_mouse1"
+sg_cmd "set text cy $(( height / 6 )) $text_mouse1"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 Button 2: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 2: 0"
 text_mouse2=$reply
-sg_cmd "set text cy 200 $text_mouse2"
+sg_cmd "set text cy $(( height / 3)) $text_mouse2"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 Button 3: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 3: 0"
 text_mouse3=$reply
-sg_cmd "set text cy 300 $text_mouse3"
+sg_cmd "set text cy $(( height / 2 )) $text_mouse3"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 Mouse X: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Mouse X: 0"
 text_mouse4=$reply
-sg_cmd "set text cy 400 $text_mouse4"
+sg_cmd "set text cy $(( height / 6 * 4 )) $text_mouse4"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 Mouse Y: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Mouse Y: 0"
 text_mouse5=$reply
-sg_cmd "set text cy 500 $text_mouse5"
+sg_cmd "set text cy $(( height / 6 * 5 )) $text_mouse5"
 
-sg_cmd "set text cx 400 $text_mouse1 $text_mouse2 $text_mouse3 $text_mouse4 $text_mouse5"
+sg_cmd "set text cx $(( width / 2 )) $text_mouse1 $text_mouse2 $text_mouse3 $text_mouse4 $text_mouse5"
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 FPS: 0"
 text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"
 
-sg_cmd "set sg fps 10000"
+# sg_cmd "set sg fps 10000"
 
 while true; do
     sg_cmd "update sg"
 
-    sg_cmd "arr key pressed esc f 1 2"
+    sg_cmd "arr key pressed esc f 1 2 3"
     pressed[esc]=${array[0]}
     pressed[f]=${array[1]}
     pressed[1]=${array[2]}
     pressed[2]=${array[3]}
+    pressed[3]=${array[4]}
 
     (( pressed[esc] )) && sg_quit 0
     (( pressed[f] )) && fps=$(( 1 - fps ))
     (( pressed[1] )) && mode=1
     (( pressed[2] )) && mode=2
+
+    if (( pressed[3] )); then
+        fullscreen=$(( 1 - fullscreen ))
+        if (( fullscreen )); then
+            sg_cmd "set sg fullscreen desktop"
+        else
+            sg_cmd "set sg fullscreen disable"
+        fi
+    fi
+
 
     if (( mode == 1 )); then
         sg_cmd "get mouse held 1"

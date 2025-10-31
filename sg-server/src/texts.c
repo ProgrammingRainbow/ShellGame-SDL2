@@ -1,8 +1,9 @@
 #include "texts.h"
+#include "bubble.h"
 
 void text_recalculate_pos(Text *text);
-bool text_update_image(SDL_Renderer *renderer, Text *t,
-                       SDL_ScaleMode scale_mode);
+bool text_regen_image(SDL_Renderer *renderer, Text *t,
+                      SDL_ScaleMode scale_mode);
 
 void text_recalculate_pos(Text *text) {
     if (text->anchor_h == RECT_R) {
@@ -129,16 +130,48 @@ void text_set_rect_field(Game *g, int id, RectField field, float value) {
     text_recalculate_pos(&g->texts.texts[id]);
 }
 
-bool text_update_image(SDL_Renderer *renderer, Text *t,
-                       SDL_ScaleMode scale_mode) {
-    SDL_Surface *surf = TTF_RenderText_Blended(t->font, t->str, t->color);
-    if (surf == NULL) {
-        fprintf(stderr, "Error creating text Surface: %s\n", SDL_GetError());
+bool text_regen_image(SDL_Renderer *renderer, Text *t,
+                      SDL_ScaleMode scale_mode) {
+    if (t->image) {
+        SDL_DestroyTexture(t->image);
+        t->image = NULL;
+    }
+
+    SDL_Surface *text_surf =
+        TTF_RenderText_Blended(t->font, t->text_str, t->inner_color);
+    if (text_surf == NULL) {
+        fprintf(stderr, "Error creating text inner Surface: %s\n",
+                SDL_GetError());
         return false;
     }
 
-    SDL_DestroyTexture(t->image);
-    t->image = NULL;
+    SDL_Surface *surf = NULL;
+
+    if (t->bubble) {
+        SDL_Surface *outer_surf =
+            TTF_RenderText_Blended(t->font, t->text_str, t->outer_color);
+        if (outer_surf == NULL) {
+            fprintf(stderr, "Error creating text outer Surface: %s\n",
+                    SDL_GetError());
+            SDL_FreeSurface(text_surf);
+            text_surf = NULL;
+            return false;
+        }
+
+        surf = bubble_two_surfaces(t->radius, text_surf, outer_surf);
+        SDL_FreeSurface(text_surf);
+        text_surf = NULL;
+        SDL_FreeSurface(outer_surf);
+        outer_surf = NULL;
+        if (surf == NULL) {
+            return false;
+        }
+    } else {
+        surf = text_surf;
+    }
+
+    t->rect.w = surf->w;
+    t->rect.h = surf->h;
 
     t->image = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_FreeSurface(surf);
@@ -148,24 +181,57 @@ bool text_update_image(SDL_Renderer *renderer, Text *t,
         return false;
     }
 
-    SDL_SetTextureScaleMode(t->image, scale_mode);
-
-    if (SDL_QueryTexture(t->image, NULL, NULL, &t->rect.w, &t->rect.h)) {
-        fprintf(stderr, "Error getting Texture size: %s\n", SDL_GetError());
+    if (SDL_SetTextureAlphaMod(t->image, t->alpha)) {
+        fprintf(stderr, "Error setting alpha for Texture: %s\n",
+                SDL_GetError());
         return false;
     }
 
-    text_recalculate_pos(t);
+    SDL_SetTextureScaleMode(t->image, scale_mode);
 
     return true;
 }
 
-bool text_set_color(Game *game, int id, uint8_t r, uint8_t g, uint8_t b,
-                    uint8_t a) {
-    game->texts.texts[id].color = (SDL_Color){r, g, b, a};
+bool text_set_bubble(Game *g, int id, int radius, SDL_Color outer_color) {
+    g->texts.texts[id].radius = radius;
+    g->texts.texts[id].outer_color = outer_color;
+    g->texts.texts[id].bubble = true;
 
-    return text_update_image(game->renderer, &game->texts.texts[id],
-                             game->scale_mode);
+    if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
+        return false;
+    }
+
+    text_recalculate_pos(&g->texts.texts[id]);
+
+    return true;
+}
+
+bool text_unset_bubble(Game *g, int id) {
+    g->texts.texts[id].bubble = false;
+
+    if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
+        return false;
+    }
+
+    text_recalculate_pos(&g->texts.texts[id]);
+
+    return true;
+}
+
+bool text_set_color(Game *g, int id, SDL_Color inner_color, Uint8 alpha) {
+    g->texts.texts[id].inner_color = inner_color;
+    g->texts.texts[id].alpha = alpha;
+
+    return text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode);
+}
+
+bool text_set_colors(Game *g, int id, SDL_Color inner_color,
+                     SDL_Color outer_color, Uint8 alpha) {
+    g->texts.texts[id].inner_color = inner_color;
+    g->texts.texts[id].outer_color = outer_color;
+    g->texts.texts[id].alpha = alpha;
+
+    return text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode);
 }
 
 bool text_set_font(Game *g, int id, const char *file, int size) {
@@ -178,16 +244,34 @@ bool text_set_font(Game *g, int id, const char *file, int size) {
         return false;
     }
 
-    return text_update_image(g->renderer, &g->texts.texts[id], g->scale_mode);
+    if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
+        return false;
+    }
+
+    text_recalculate_pos(&g->texts.texts[id]);
+
+    return true;
 }
 
-bool text_set_str(Game *g, int id, const char *str) {
-    memcpy(g->texts.texts[id].str, str, BUFFER_SIZE);
+bool text_set_str(Game *g, int id, const char *new_str) {
+    if (!strcmp(g->texts.texts[id].text_str, new_str)) {
+        return true;
+    }
 
-    return text_update_image(g->renderer, &g->texts.texts[id], g->scale_mode);
+    strncpy(g->texts.texts[id].text_str, new_str, BUFFER_SIZE - 1);
+    g->texts.texts[id].text_str[BUFFER_SIZE - 1] = '\0';
+
+    if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
+        return false;
+    }
+
+    text_recalculate_pos(&g->texts.texts[id]);
+
+    return true;
 }
 
-bool text_new(Game *g, int *id, const char *file, int size, const char *str) {
+bool text_new(Game *g, int *id, const char *file, int size,
+              const char *text_str) {
     Text t = {.in_use = true};
 
     t.font = TTF_OpenFont(file, size);
@@ -196,14 +280,45 @@ bool text_new(Game *g, int *id, const char *file, int size, const char *str) {
         return false;
     }
 
-    memcpy(t.str, str, BUFFER_SIZE);
+    strncpy(t.text_str, text_str, BUFFER_SIZE - 1);
+    t.text_str[BUFFER_SIZE - 1] = '\0';
 
-    t.color = (SDL_Color){255, 255, 255, 255};
+    t.inner_color = (SDL_Color){255, 255, 255, 255};
+    t.alpha = 255;
 
     t.anchor_h = RECT_X;
     t.anchor_v = RECT_Y;
 
-    if (!text_update_image(g->renderer, &t, g->scale_mode)) {
+    if (!text_regen_image(g->renderer, &t, g->scale_mode)) {
+        return false;
+    }
+
+    return buffer_push(&g->texts, &t, id);
+}
+
+bool text_bubble_new(Game *g, int *id, const char *file, int size,
+                     const char *text_str, int radius) {
+    Text t = {.in_use = true};
+
+    t.font = TTF_OpenFont(file, size);
+    if (!t.font) {
+        fprintf(stderr, "Error opening new Font: %s\n", SDL_GetError());
+        return false;
+    }
+
+    strncpy(t.text_str, text_str, BUFFER_SIZE - 1);
+    t.text_str[BUFFER_SIZE - 1] = '\0';
+
+    t.inner_color = (SDL_Color){0, 0, 0, 255};
+    t.outer_color = (SDL_Color){255, 255, 255, 255};
+    t.bubble = true;
+    t.radius = radius;
+    t.alpha = 255;
+
+    t.anchor_h = RECT_X;
+    t.anchor_v = RECT_Y;
+
+    if (!text_regen_image(g->renderer, &t, g->scale_mode)) {
         return false;
     }
 

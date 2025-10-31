@@ -12,6 +12,7 @@ typedef struct Game {
         char title[TITLE_LENGTH];
         int width;
         int height;
+        float scale;
         Buffer images;
         Buffer rects;
         Buffer texts;
@@ -45,6 +46,7 @@ void game_free(struct Game *game);
 bool game_start(Game *g);
 bool game_icon(Game *g, const char *filename);
 void game_set_size(Game *g, int w, int h);
+void game_set_scale(Game *g, float scale);
 void game_render_clear(Game *g);
 bool game_update(Game *g);
 bool game_key_press(Game *g, SDL_Scancode sc);

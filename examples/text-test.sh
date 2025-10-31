@@ -23,6 +23,7 @@ width=1280
 height=720
 mode=4
 fps=0
+text_bubble_size=5
 
 declare -a texts
 declare -a texts_xvel
@@ -66,8 +67,8 @@ text_reset() {
 }
 
 for i in {0..199}; do
-    text_size=$(( ( RANDOM % 70 ) + 1 ))
-    sg_cmd "new text examples/fonts/freesansbold.ttf $text_size hello"
+    text_size=$(( ( RANDOM % 60 ) + 10 ))
+    sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $text_bubble_size hello"
     texts[$i]=$reply
     text_reset ${texts[$i]}
     texts_xvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
@@ -75,12 +76,12 @@ for i in {0..199}; do
     texts_avel[$i]=$(( ( RANDOM % 720 ) - 360 ))
 done
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 100 15 FPS: 0"
 text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"
 
-sg_cmd "set sg fps 10000"
+# sg_cmd "set sg fps 10000"
 
 while true; do
     sg_cmd "update sg"
