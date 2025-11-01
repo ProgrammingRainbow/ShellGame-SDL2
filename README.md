@@ -336,6 +336,6 @@ These commands work with the object <type> rect, sprite, and image.
 | `arr <type> angle {id array}` → `{int array}`        | Returns and array of angles. One for each object id. |
 | `arr <type> size <id>` → `{int array}`               | Returns an array of `[w,h]`. |
 | `arr <type> rect <id>` → `{int array}`               | Returns full rectangle `[x, y, w, h, r, b, cx, cy]`. |
-| `arr <type> <attribute> {id array}` → `{int array}`  | Returns and array an attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
+| `arr <type> <attribute> {id array}` → `{int array}`  | Returns an array of attributes (x,l,left,y,t,top,w,width,h,height,r,right,b,bottom,cx,cy) one for each id given. |
 
 ---
