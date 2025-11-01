@@ -215,15 +215,21 @@ This command works with all ShellGame object <type>.
 ## Text objects
 Text objects have there own rect and angle. All commands like update, set, or get work with text objects.
 All commands apply immediatly to the text object. Setting a new font will cause the internal texture to be regenerated.
-| Command                                         | Description |
-|-------------------------------------------------|-------------|
-| `new text <font> <size> <string>` → `<txt_id>`  | Creates a text object with font, size, and a string. |
-| `draw text {txt_id array}`                      | Draws a text object using it own rect and angle. Applies to each space separated id. | 
-| `set text string <txt_id> <string>`             | Sets a string for a text object. Everything after the id will be the string. |
-| `set text font <txt_id> <font> <size>`          | Sets the font and size of a text object. |
-| `set text color <txt_id> <r> <g> <b>`           | Sets the color of a text object. |
-| `set text color <txt_id> <r> <g> <b> <a>`       | Same as above but with an alpha option. |
-| `free <type> {id array}` → `{id array}`         | Frees each object and returns an array of their rest ids. |
+| Command                                                             | Description |
+|---------------------------------------------------------------------|-------------|
+| `new text <font> <size> <string>` → `<txt_id>`                      | Creates a text object with font, size, and a string. |
+| `draw text {txt_id array}`                                          | Draws a text object using it own rect and angle. Applies to each space separated id. | 
+| `set text string <txt_id> <string>`                                 | Sets a string for a text object. Everything after the id will be the string. |
+| `set text font <txt_id> <font> <size>`                              | Sets the font and size of a text object. |
+| `set text color <txt_id> <r> <g> <b>`                               | Sets the color of a text object. |
+| `set text color <txt_id> <r> <g> <b> <a>`                           | Same as above but with an alpha option. |
+| `set text colors <txt_id> <i_r> <i_g> <i_b> <o_r> <o_b> <o_b>`      | Sets both inner and outer color of a text object. |
+| `set text colors <txt_id> <i_r> <i_g> <i_b> <o_r> <o_b> <o_b> <a>`  | Same as above but with an alpha option. |
+| `set text bubble color <txt_id> <r> <g> <b>`                        | Sets the outer color of a text object. |
+| `set text bubble color <txt_id> <r> <g> <b> <a>`                    | Same as above but with an alpha option. |
+|` set text bubble (endable,disable) {txt_id array}`                  | Enable or disable the text bubble mode.
+| `set text bubble radius <uint8> {txt_id array}`                     | Set the radius of the bubble around the text. |
+| `free <type> {id array}` → `{id array}`                             | Frees each object and returns an array of their rest ids. |
 
 ---
 
