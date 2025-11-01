@@ -5,6 +5,7 @@ ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an S
 ![Screenshot](screenshot2.png)
 ![Screenshot](screenshot3.png)
 ![Screenshot](screenshot4.png)
+![Screenshot](screenshot5.png)
 
 ## Install on archlinux
 Install sdl2 and friends.
