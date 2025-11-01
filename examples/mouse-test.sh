@@ -52,29 +52,29 @@ sg_cmd "set sg resizable enable"
 sg_cmd "set render scaling best"
 sg_cmd "set render color 128 46 46"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 1: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Button 1: 0"
 text_mouse1=$reply
 sg_cmd "set text cy $(( height / 6 )) $text_mouse1"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 2: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Button 2: 0"
 text_mouse2=$reply
 sg_cmd "set text cy $(( height / 3)) $text_mouse2"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Button 3: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Button 3: 0"
 text_mouse3=$reply
 sg_cmd "set text cy $(( height / 2 )) $text_mouse3"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Mouse X: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Mouse X: 0"
 text_mouse4=$reply
 sg_cmd "set text cy $(( height / 6 * 4 )) $text_mouse4"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 Mouse Y: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Mouse Y: 0"
 text_mouse5=$reply
 sg_cmd "set text cy $(( height / 6 * 5 )) $text_mouse5"
 
 sg_cmd "set text cx $(( width / 2 )) $text_mouse1 $text_mouse2 $text_mouse3 $text_mouse4 $text_mouse5"
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 15 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 FPS: 0"
 text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"

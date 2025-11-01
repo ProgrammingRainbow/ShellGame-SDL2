@@ -81,7 +81,7 @@ done
 sg_cmd "get sprite width ${sprites[0]}"
 size=$reply
 
-sg_cmd "new text examples/fonts/freesansbold.ttf 50 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 FPS: 0"
 text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"

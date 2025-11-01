@@ -51,10 +51,6 @@ declare -A txt_rect=(
     [b]=0
 )
 
-sg_cmd "start sg"
-sg_cmd "set sg title Text Test."
-sg_cmd "set sg size $width $height"
-
 text_reset() {
     x=$(( RANDOM % width ))
     y=$(( RANDOM % height ))
@@ -66,6 +62,11 @@ text_reset() {
     sg_cmd "set text color $1 $r $g $b"
 }
 
+sg_cmd "start sg"
+sg_cmd "set sg title Text Test."
+sg_cmd "set sg size $width $height"
+sg_cmd "set render scaling best"
+
 for i in {0..199}; do
     text_size=$(( ( RANDOM % 60 ) + 10 ))
     sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $text_bubble_size hello"
@@ -76,7 +77,7 @@ for i in {0..199}; do
     texts_avel[$i]=$(( ( RANDOM % 720 ) - 360 ))
 done
 
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 100 15 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 FPS: 0"
 text_fps=$reply
 
 sg_cmd "set text pos 10 10 $text_fps"

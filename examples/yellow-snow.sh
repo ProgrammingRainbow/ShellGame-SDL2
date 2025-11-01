@@ -27,16 +27,18 @@ player_top=0
 player_left=0
 player_right=0
 flake_size=0
-text_size=40
-text_bubble_size=5
+text_size=50
+text_bubble_size=7
 ground=535
 velocity=300
 score=0
 playing=1
 fps=0
-fps_size=40
-fps_bubble_size=5
+fps_size=50
+fps_bubble_size=7
 fullscreen=0
+play_music=1
+play_sound=1
 
 # Global arrays
 declare -a flakes
@@ -48,6 +50,7 @@ declare -A pressed=(
     [space]=0
     [w]=0
     [m]=0
+    [n]=0
 )
 
 declare -A held=(
@@ -71,6 +74,31 @@ flake_reset() {
     fi
 
     sg_cmd "set rect pos $x $y $2"
+}
+
+# function to enable/disable music.
+update_music() {
+    if (( playing )); then
+        if (( play_music )); then
+            sg_cmd "get music playing"
+            if (( reply )); then
+                sg_cmd "set music resume"
+            else
+                sg_cmd "play music $music"
+            fi
+        else
+            sg_cmd "set music pause"
+        fi
+    fi
+}
+
+# function to enable/disable fullscreen.
+update_fullscreen() {
+    if (( fullscreen )); then
+        sg_cmd "set sg fullscreen desktop"
+    else
+        sg_cmd "set sg fullscreen disable"
+    fi
 }
 
 # Tell server to start ShellGame.
@@ -143,8 +171,11 @@ hit_snd=$reply
 sg_cmd "new music examples/music/winter_loop.ogg"
 music=$reply
 
-# Play the loaded music.
-sg_cmd "play music $music"
+# Set play music enable/disable.
+update_music
+
+# Set fullscreen enable/disable.
+update_fullscreen
 
 # Create a text object for displaying the FPS.
 sg_cmd "new text bubble examples/fonts/freesansbold.ttf $fps_size $fps_bubble_size FPS: 0"
@@ -162,12 +193,13 @@ while true; do
     sg_cmd "update sg"
 
     # Capturing pressed keys in an associated array.
-    sg_cmd "arr key pressed esc space f w m"
+    sg_cmd "arr key pressed esc space f w m n"
     pressed[esc]=${array[0]}
     pressed[space]=${array[1]}
     pressed[f]=${array[2]}
     pressed[w]=${array[3]}
     pressed[m]=${array[4]}
+    pressed[n]=${array[5]}
 
     # Escape to quit.
     (( pressed[esc] )) && sg_quit 0
@@ -175,24 +207,19 @@ while true; do
     # Toggle show fps and fullscreen.
     (( pressed[f] )) && fps=$(( 1 - fps ))
 
+    # Toggle sound.
+    (( pressed[n] )) && play_sound=$(( 1 - play_sound ))
+
+    # Toggle music.
     if (( pressed[w] )); then
         fullscreen=$(( 1 - fullscreen ))
-        if (( fullscreen )); then
-            sg_cmd "set sg fullscreen desktop"
-        else
-            sg_cmd "set sg fullscreen disable"
-        fi
+        update_fullscreen
     fi
 
     # Toggle playing the music. If game is not in playing state pause music.
     if (( pressed[m] )); then
-        sg_cmd "get music playing"
-        if (( reply )); then
-            sg_cmd "set music halt"
-        else
-            sg_cmd "play music $music"
-            (( playing )) || sg_cmd "set music pause"
-        fi
+        play_music=$(( 1 - play_music ))
+        update_music
     fi
 
     if (( playing )); then
@@ -251,13 +278,13 @@ while true; do
                         # If it's a yellow flake pause the music and game.
                         # Play hit sound.
                         if (( $i < 5)); then
-                            sg_cmd "play sound $hit_snd"
+                            (( play_sound )) && sg_cmd "play sound $hit_snd"
                             sg_cmd "set music pause"
                             playing=0
                         else
                             # Play collect sound and update Text with new string.
                             (( score++ ))
-                            sg_cmd "play sound $collect_snd"
+                            (( play_sound )) && sg_cmd "play sound $collect_snd"
                             sg_cmd "set text string $score_text Score: $score"
                             flake_reset 0 ${flakes[$i]}
                         fi
@@ -274,8 +301,7 @@ while true; do
             for flake in "${flakes[@]}"; do
                 flake_reset 1 $flake
             done
-            sg_cmd "get music playing"
-            (( $reply )) && sg_cmd "set music resume"
+            update_music
         fi
     fi
 

@@ -149,6 +149,88 @@ bool parse_text(SdlServer *s, char *action) {
                 }
                 return text_set_font(s->game, txt_id, p3, size);
             }
+        } else if (!strcmp(p1, "bubble")) {
+            if (!strcmp(p2, "enable") && p3) {
+                // set text bubble endable {txt_id array}
+                int txt_id = 0;
+                while (p3) {
+                    if (!str_to_id(&s->game->texts, p3, &txt_id, s->orig_str)) {
+                        return false;
+                    }
+
+                    if (!text_bubble_enable(s->game, txt_id, true)) {
+                        return false;
+                    }
+                    p3 = strtok(NULL, " ");
+                }
+            } else if (!strcmp(p2, "disable") && p3) {
+                // set text bubble disable {txt_id array}
+                int txt_id = 0;
+                while (p3) {
+                    if (!str_to_id(&s->game->texts, p3, &txt_id, s->orig_str)) {
+                        return false;
+                    }
+
+                    if (!text_bubble_enable(s->game, txt_id, false)) {
+                        return false;
+                    }
+                    p3 = strtok(NULL, " ");
+                }
+            } else if (!strcmp(p2, "color")) {
+                char *p4 = strtok(NULL, " ");
+                char *p5 = strtok(NULL, " ");
+                char *p6 = strtok(NULL, " ");
+                char *p7 = strtok(NULL, " ");
+                char *p8 = strtok(NULL, " ");
+                int txt_id = 0;
+                if (!str_to_id(&s->game->texts, p3, &txt_id, s->orig_str)) {
+                    return false;
+                }
+                Uint8 r = 0;
+                if (!str_to_u8(p4, &r, s->orig_str)) {
+                    return false;
+                }
+                Uint8 g = 0;
+                if (!str_to_u8(p5, &g, s->orig_str)) {
+                    return false;
+                }
+                Uint8 b = 0;
+                if (!str_to_u8(p6, &b, s->orig_str)) {
+                    return false;
+                }
+                if (p6 && !p7) {
+                    // set text bubble color <txt_id> <r> <g> <b>
+                    SDL_Color inner_color = {r, g, b, 255};
+                    text_set_color(s->game, txt_id, inner_color, 255);
+                    return true;
+                } else if (p7 && !p8) {
+                    // set text bubble color <txt_id> <r> <g> <b> <a>
+                    Uint8 a = 0;
+                    if (!str_to_u8(p6, &a, s->orig_str)) {
+                        return false;
+                    }
+                    SDL_Color inner_color = {r, g, b, 255};
+                    text_set_color(s->game, txt_id, inner_color, a);
+                    return true;
+                }
+            } else if (!strcmp(p2, "radius")) {
+                // set text bubble radius <uint8> {txt_id array}
+                char *p4 = strtok(NULL, " ");
+                Uint8 radius = 0;
+                if (!str_to_u8(p3, &radius, s->orig_str)) {
+                    return false;
+                }
+                while (p4) {
+                    int txt_id = 0;
+                    if (!str_to_id(&s->game->texts, p4, &txt_id, s->orig_str)) {
+                        return false;
+                    }
+                    if (!text_bubble_radius(s->game, txt_id, radius)) {
+                        return false;
+                    }
+                    p4 = strtok(NULL, " ");
+                }
+            }
         } else if (!strcmp(p1, "color")) {
             char *p4 = strtok(NULL, " ");
             char *p5 = strtok(NULL, " ");

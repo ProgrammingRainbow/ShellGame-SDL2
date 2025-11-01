@@ -192,8 +192,7 @@ bool text_regen_image(SDL_Renderer *renderer, Text *t,
     return true;
 }
 
-bool text_set_bubble(Game *g, int id, int radius, SDL_Color outer_color) {
-    g->texts.texts[id].radius = radius;
+bool text_bubble_color(Game *g, int id, SDL_Color outer_color) {
     g->texts.texts[id].outer_color = outer_color;
     g->texts.texts[id].bubble = true;
 
@@ -206,8 +205,21 @@ bool text_set_bubble(Game *g, int id, int radius, SDL_Color outer_color) {
     return true;
 }
 
-bool text_unset_bubble(Game *g, int id) {
-    g->texts.texts[id].bubble = false;
+bool text_bubble_radius(Game *g, int id, Uint8 radius) {
+    g->texts.texts[id].radius = radius;
+    g->texts.texts[id].bubble = true;
+
+    if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
+        return false;
+    }
+
+    text_recalculate_pos(&g->texts.texts[id]);
+
+    return true;
+}
+
+bool text_bubble_enable(Game *g, int id, bool bubble) {
+    g->texts.texts[id].bubble = bubble;
 
     if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
         return false;
@@ -297,7 +309,7 @@ bool text_new(Game *g, int *id, const char *file, int size,
 }
 
 bool text_bubble_new(Game *g, int *id, const char *file, int size,
-                     const char *text_str, int radius) {
+                     const char *text_str, Uint8 radius) {
     Text t = {.in_use = true};
 
     t.font = TTF_OpenFont(file, size);

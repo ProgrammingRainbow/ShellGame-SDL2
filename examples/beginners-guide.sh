@@ -89,26 +89,23 @@ sg_cmd "new sprite examples/images/zsh-logo.png"
 zsh_sprt=$reply
 
 # Create a text object for displaying the FPS.
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 100 15 FPS: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 FPS: 0"
 text_fps=$reply
 
-# sg_cmd "set text color $text_fps 128 0 128"
 # Setting anchor and position of text object.
 sg_cmd "set text cx $(( width / 2 )) $text_fps"
 sg_cmd "set text top 10 $text_fps"
 
 # Create X position text with shadow text.
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 100 15 X: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 X: 0"
 text_x=$reply
 sg_cmd "set text pos 10 10 $text_x"
-# sg_cmd "set text colors $text_x 128 0 128 0 128 0"
 
 # Create Y position text with shadow text.
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 100 15 Y: 0"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 Y: 0"
 text_y=$reply
 sg_cmd "set text top 10 $text_y"
 sg_cmd "set text right $(( width - 15 )) $text_y"
-# sg_cmd "set text colors $text_y 0 128 128 255 128 0 0 0"
 
 # Loading sound effects.
 sg_cmd "new sound examples/sounds/zsh2.ogg"

@@ -37,7 +37,7 @@ bool parse_render(SdlServer *s, char *action) {
                 return true;
             }
         } else if (!strcmp(p1, "color") && p1) {
-            // set render color <r> <g> <b> <a>
+            // set render color <r> <g> <b>
             char *p4 = strtok(NULL, " ");
             char *p5 = strtok(NULL, " ");
             char *p6 = strtok(NULL, " ");
@@ -56,6 +56,7 @@ bool parse_render(SdlServer *s, char *action) {
                 }
                 Uint8 a = 255;
                 if (p5) {
+                    // set render color <r> <g> <b> <a>
                     if (!str_to_u8(p5, &a, s->orig_str)) {
                         return false;
                     }
