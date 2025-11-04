@@ -20,12 +20,8 @@ bool parse_image(SdlServer *s, char *action) {
         char *p3 = strtok(NULL, " ");
         if (p3) {
             int src_id = 0;
-            if (!strcmp(p1, "NULL")) {
-                src_id = -1;
-            } else {
-                if (!str_to_id(&s->game->rects, p1, &src_id, s->orig_str)) {
-                    return false;
-                }
+            if (!str_to_id(&s->game->rects, p1, &src_id, s->orig_str)) {
+                return false;
             }
             int dest_id = 0;
             if (!str_to_id(&s->game->rects, p2, &dest_id, s->orig_str)) {

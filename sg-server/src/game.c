@@ -131,6 +131,18 @@ bool game_icon(Game *g, const char *filename) {
     return true;
 }
 
+void game_set_resizable(Game *g, SDL_bool toggle) {
+    SDL_SetWindowResizable(g->window, toggle);
+
+    // Ugly work around so the close window icon is perserved.
+    // The Window must be resized after setting to resizable.
+    int w = 0;
+    int h = 0;
+    SDL_GetWindowSize(g->window, &w, &h);
+    SDL_SetWindowSize(g->window, w + 1, h + 1);
+    SDL_SetWindowSize(g->window, w, h);
+}
+
 void game_set_size(Game *g, int w, int h) {
     g->width = w;
     g->height = h;
@@ -159,6 +171,14 @@ void game_render_clear(Game *g) {
     SDL_RenderFillRect(g->renderer, NULL);
 }
 
+void game_render_fillrect(Game *g, int id) {
+    if (id == -1) {
+        SDL_RenderFillRect(g->renderer, NULL);
+    } else {
+        SDL_RenderFillRect(g->renderer, &g->rects.rects[id].rect);
+    }
+}
+
 bool game_update(Game *g) {
     while (SDL_PollEvent(&g->event)) {
         if (g->event.type == SDL_QUIT) {
@@ -171,7 +191,16 @@ bool game_update(Game *g) {
     memcpy(g->curr_keystate, g->keystate, SDL_NUM_SCANCODES * sizeof(bool));
 
     g->prev_mouse_buttons = g->curr_mouse_buttons;
-    g->curr_mouse_buttons = SDL_GetMouseState(&g->mouse_x, &g->mouse_y);
+    int mouse_x = 0;
+    int mouse_y = 0;
+    g->curr_mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
+
+    float logical_x = 0;
+    float logical_y = 0;
+    SDL_RenderWindowToLogical(g->renderer, mouse_x, mouse_y, &logical_x,
+                              &logical_y);
+    g->mouse_x = (int)logical_x;
+    g->mouse_y = (int)logical_y;
 
     g->dt = fps_update(g->fps);
 

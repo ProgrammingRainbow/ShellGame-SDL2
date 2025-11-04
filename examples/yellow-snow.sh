@@ -19,7 +19,7 @@ else
     exit 1
 fi
 
-# Global Variables
+# Global Variables.
 width=800
 height=600
 player_offset=45
@@ -28,29 +28,27 @@ player_left=0
 player_right=0
 flake_size=0
 text_size=50
-text_bubble_size=7
+bubble_size=7
 ground=535
 velocity=300
 score=0
 playing=1
-fps=0
-fps_size=50
-fps_bubble_size=7
+fps_display=0
 fullscreen=0
 play_music=1
 play_sound=1
 
-# Global arrays
+# Global arrays.
 declare -a flakes
 
 # Global Associative arrays.
 declare -A pressed=(
     [esc]=0
-    [f]=0
+    [1]=0
+    [2]=0
+    [3]=0
+    [4]=0
     [space]=0
-    [w]=0
-    [m]=0
-    [n]=0
 )
 
 declare -A held=(
@@ -76,6 +74,33 @@ flake_reset() {
     sg_cmd "set rect pos $x $y $2"
 }
 
+# Capturing pressed keys in an associated array.
+get_keys_pressed() {
+    sg_cmd "arr key pressed esc 1 2 3 4 space"
+    pressed[esc]=${array[0]}
+    pressed[1]=${array[1]}
+    pressed[2]=${array[2]}
+    pressed[3]=${array[3]}
+    pressed[4]=${array[4]}
+    pressed[space]=${array[5]}
+}
+
+# function to enable/disable fullscreen.
+update_fullscreen() {
+    if (( fullscreen )); then
+        sg_cmd "set sg fullscreen desktop"
+    else
+        sg_cmd "set sg fullscreen disable"
+    fi
+}
+
+# Update the FPS text and display it if enabled.
+update_fps() {
+    sg_cmd "get sg fps"
+    sg_cmd "set text string $text_fps FPS: $reply"
+    sg_cmd "draw text $text_fps"
+}
+
 # function to enable/disable music.
 update_music() {
     if (( playing )); then
@@ -92,34 +117,25 @@ update_music() {
     fi
 }
 
-# function to enable/disable fullscreen.
-update_fullscreen() {
-    if (( fullscreen )); then
-        sg_cmd "set sg fullscreen desktop"
-    else
-        sg_cmd "set sg fullscreen disable"
-    fi
-}
-
 # Tell server to start ShellGame.
 sg_cmd "start sg"
-# sg_cmd "set sg scale 1.5"
 
+# Set the size, title, icon, resizable, and scale quality.
+sg_cmd "set sg size $width $height"
+sg_cmd "set sg title Don't eat the Yellow Snow!"
+sg_cmd "set sg icon examples/images/ys-yellow.png"
 sg_cmd "set sg resizable enable"
 sg_cmd "set render scaling best"
-# sg_cmd "set render intscale enable"
 
-# Optionally set Window attributes.
-sg_cmd "set sg title Don't eat the Yellow Snow!"
-sg_cmd "set sg icon examples/images/yellow.png"
-sg_cmd "set sg size $width $height"
+# Scale the window but keeps the logical renderer original.
+sg_cmd "set sg scale 1.5"
 
 # Create new background sprite.
-sg_cmd "new sprite examples/images/background.png"
+sg_cmd "new sprite examples/images/ys-background.png"
 background=$reply
 
 # Create player sprite.
-sg_cmd "new sprite examples/images/player.png"
+sg_cmd "new sprite examples/images/ys-player.png"
 player=$reply
 
 # Set player on the ground and get the top.
@@ -136,10 +152,10 @@ sg_cmd "get sprite r $player"
 player_right=$(( reply - 45 ))
 
 # Load the white and yellow flake images.
-sg_cmd "new image examples/images/yellow.png"
+sg_cmd "new image examples/images/ys-yellow.png"
 yellow_img=$reply
 
-sg_cmd "new image examples/images/white.png"
+sg_cmd "new image examples/images/ys-white.png"
 white_img=$reply
 
 # Populate the flake size from an image.
@@ -154,7 +170,7 @@ for i in {0..15}; do
 done
 
 # Create a new Text object.
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $text_bubble_size Score: $score"
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $bubble_size Score: $score"
 score_text=$reply
 
 # Set the Text to anchor in the top right.
@@ -171,66 +187,62 @@ hit_snd=$reply
 sg_cmd "new music examples/music/winter_loop.ogg"
 music=$reply
 
+# Create a text object for displaying the FPS.
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $bubble_size FPS: 0"
+text_fps=$reply
+
+# Set the FPS Text object anchord to the top left.
+sg_cmd "set text pos 10 10 $text_fps"
+
 # Set play music enable/disable.
 update_music
 
 # Set fullscreen enable/disable.
 update_fullscreen
 
-# Create a text object for displaying the FPS.
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf $fps_size $fps_bubble_size FPS: 0"
-text_fps=$reply
-
-# Set the FPS Text object anchord to the top left.
-sg_cmd "set text pos 10 10 $text_fps"
-
 # Override the default 60fps
-# sg_cmd "set sg fps 10000"
+# sg_cmd "set sg fps 60"
 
 # Main game loop. 
 while true; do
     # "update sg" should be run first.
     sg_cmd "update sg"
 
-    # Capturing pressed keys in an associated array.
-    sg_cmd "arr key pressed esc space f w m n"
-    pressed[esc]=${array[0]}
-    pressed[space]=${array[1]}
-    pressed[f]=${array[2]}
-    pressed[w]=${array[3]}
-    pressed[m]=${array[4]}
-    pressed[n]=${array[5]}
+    # Get the state of the needed keys and update associated array.
+    get_keys_pressed
 
     # Escape to quit.
     (( pressed[esc] )) && sg_quit 0
 
-    # Toggle show fps and fullscreen.
-    (( pressed[f] )) && fps=$(( 1 - fps ))
-
-    # Toggle sound.
-    (( pressed[n] )) && play_sound=$(( 1 - play_sound ))
-
-    # Toggle music.
-    if (( pressed[w] )); then
-        fullscreen=$(( 1 - fullscreen ))
+    # Toggle fullscreen.
+    if (( pressed[1] )); then
+        (( fullscreen = 1 - fullscreen ))
         update_fullscreen
     fi
 
-    # Toggle playing the music. If game is not in playing state pause music.
-    if (( pressed[m] )); then
+    # Toggle show fps.
+    (( pressed[2] )) && (( fps_display = 1 - fps_display ))
+
+    # Toggle playing the music. If game is not in playing start pause music.
+    if (( pressed[3] )); then
         play_music=$(( 1 - play_music ))
         update_music
     fi
 
+    # Toggle sound.
+    (( pressed[4] )) && play_sound=$(( 1 - play_sound ))
+
     if (( playing )); then
         # If the game is in playing state capture left and right in an associated array.
-        sg_cmd "arr key held left right"
-        held[left]=${array[0]}
-        held[right]=${array[1]}
+        sg_cmd "arr key held a d left right"
+        held[a]=${array[0]}
+        held[d]=${array[1]}
+        held[left]=${array[2]}
+        held[right]=${array[3]}
 
         # Update the player position using delta time. Flip the player image.
         # Check the player with offset is not off the screen.
-        if (( held[left] )); then
+        if (( held[a] || held[left] )); then
             sg_cmd "set sprite flip h $player"
             sg_cmd "update sprite pos -$velocity 0 $player"
             sg_cmd "get sprite l $player"
@@ -239,7 +251,7 @@ while true; do
             fi
         fi
 
-        if (( held[right] )); then
+        if (( held[d] || held[right] )); then
             sg_cmd "set sprite flip n $player"
             sg_cmd "update sprite pos $velocity 0 $player"
             sg_cmd "get sprite r $player"
@@ -249,7 +261,7 @@ while true; do
         fi
 
         # If left or right was pressed update the left and right offsets for collision detection.
-        if (( held[left] || held[right] )); then
+        if (( held[a] || held[left] || held[d] || held[right] )); then
             sg_cmd "get sprite l $player"
             player_left=$(( reply + $player_offset ))
             sg_cmd "get sprite r $player"
@@ -314,11 +326,7 @@ while true; do
     sg_cmd "draw text $score_text"
 
     # Update the FPS text and display it if enabled.
-    if (( fps )); then
-        sg_cmd "get sg fps"
-        sg_cmd "set text string $text_fps FPS: $reply"
-        sg_cmd "draw text $text_fps"
-    fi
+    (( fps_display )) && update_fps
 
     # Loop over all the flakes and draw them.
     for (( i = 0; i < ${#flakes[@]}; i++ )); do
@@ -329,8 +337,9 @@ while true; do
         fi
     done
 
-    # Present the populated renderer.
+    # Present the renderer.
     sg_cmd "set render present"
 done
 
+# If exectution gets this far shut down.
 sg_quit 0

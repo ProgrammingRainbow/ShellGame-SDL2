@@ -13,6 +13,10 @@ bool music_new(Game *g, int *id, const char *filename) {
 }
 
 bool music_update(Game *g, int id, const char *filename) {
+    if (id == -1) {
+        return true;
+    }
+
     if (g->music.music[id].music) {
         Mix_FreeMusic(g->music.music[id].music);
         g->music.music[id].music = NULL;
@@ -29,6 +33,10 @@ bool music_update(Game *g, int id, const char *filename) {
 }
 
 bool music_play(Game *g, int id, int repeat) {
+    if (id == -1) {
+        return true;
+    }
+
     if (Mix_PlayMusic(g->music.music[id].music, repeat)) {
         fprintf(stderr, "Error playing Music: %s\n", SDL_GetError());
         return false;
@@ -38,6 +46,10 @@ bool music_play(Game *g, int id, int repeat) {
 }
 
 void music_free(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     if (g->music.music[id].music) {
         Mix_FreeMusic(g->music.music[id].music);
         g->music.music[id].music = NULL;

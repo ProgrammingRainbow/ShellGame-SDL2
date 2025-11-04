@@ -19,17 +19,22 @@ else
     exit 1
 fi
 
+# Global Variables.
 width=1280
 height=720
+text_size=50
+bubble_size=7
+fps_display=0
+fullscreen=0
 mode=4
-fps=0
-text_bubble_size=5
 
+# Global arrays.
 declare -a texts
 declare -a texts_xvel
 declare -a texts_yvel
 declare -a texts_avel
 
+# Global Associative arrays.
 declare -A pressed=(
     [esc]=0
     [f]=0
@@ -42,6 +47,7 @@ declare -A pressed=(
     [6]=0
     [7]=0
     [8]=0
+    [9]=0
 )
 
 declare -A txt_rect=(
@@ -51,42 +57,8 @@ declare -A txt_rect=(
     [b]=0
 )
 
-text_reset() {
-    x=$(( RANDOM % width ))
-    y=$(( RANDOM % height ))
-    r=$(( RANDOM % 255 ))
-    g=$(( RANDOM % 255 ))
-    b=$(( RANDOM % 255 ))
-    sg_cmd "set text cx $x $1"
-    sg_cmd "set text cy $y $1"
-    sg_cmd "set text color $1 $r $g $b"
-}
-
-sg_cmd "start sg"
-sg_cmd "set sg title Text Test."
-sg_cmd "set sg size $width $height"
-sg_cmd "set render scaling best"
-
-for i in {0..199}; do
-    text_size=$(( ( RANDOM % 60 ) + 10 ))
-    sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $text_bubble_size hello"
-    texts[$i]=$reply
-    text_reset ${texts[$i]}
-    texts_xvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
-    texts_yvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
-    texts_avel[$i]=$(( ( RANDOM % 720 ) - 360 ))
-done
-
-sg_cmd "new text bubble examples/fonts/freesansbold.ttf 70 10 FPS: 0"
-text_fps=$reply
-
-sg_cmd "set text pos 10 10 $text_fps"
-
-# sg_cmd "set sg fps 10000"
-
-while true; do
-    sg_cmd "update sg"
-
+# Capturing pressed keys in an associated array.
+get_keys_pressed() {
     sg_cmd "arr key pressed esc f w 1 2 3 4 5 6 7 8 9"
     pressed[esc]=${array[0]}
     pressed[f]=${array[1]}
@@ -100,7 +72,99 @@ while true; do
     pressed[7]=${array[9]}
     pressed[8]=${array[10]}
     pressed[9]=${array[11]}
+}
 
+# function to enable/disable fullscreen.
+update_fullscreen() {
+    if (( fullscreen )); then
+        sg_cmd "set sg fullscreen desktop"
+    else
+        sg_cmd "set sg fullscreen disable"
+    fi
+}
+
+# Update the FPS text and display it if enabled.
+update_fps() {
+    sg_cmd "get sg fps"
+    sg_cmd "set text string $text_fps FPS: $reply"
+    sg_cmd "draw text $text_fps"
+}
+
+# Set text to a random position and a random color.
+text_reset() {
+    local x=$(( RANDOM % width ))
+    local y=$(( RANDOM % height ))
+    local r=$(( RANDOM % 255 ))
+    local g=$(( RANDOM % 255 ))
+    local b=$(( RANDOM % 255 ))
+    sg_cmd "set text cx $x $1"
+    sg_cmd "set text cy $y $1"
+    sg_cmd "set text color $1 $r $g $b"
+}
+
+# Create 200 text objects and place the in random places on the screen.
+generate_texts() {
+    local t_size=0
+    local b_size=0
+    for i in {0..199}; do
+        (( t_size = ( RANDOM % 60 ) + 10 ))
+        (( b_size = ( t_size * 15 ) / 100 ))
+        sg_cmd "new text bubble examples/fonts/freesansbold.ttf $t_size $b_size hello"
+        texts[$i]=$reply
+        text_reset ${texts[$i]}
+        texts_xvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
+        texts_yvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
+        texts_avel[$i]=$(( ( RANDOM % 720 ) - 360 ))
+    done
+}
+
+# Start ShellGame.
+sg_cmd "start sg"
+
+# Set the size, title, icon, resizable, and scale quality.
+sg_cmd "set sg size $width $height"
+sg_cmd "set sg title Test Texts"
+sg_cmd "set sg icon examples/images/bg-bash-logo.png"
+sg_cmd "set sg resizable enable"
+sg_cmd "set render scaling best"
+
+# Create 200 text objects and place the in random places on the screen.
+generate_texts
+
+# Create a text object for displaying the FPS.
+sg_cmd "new text bubble examples/fonts/freesansbold.ttf $text_size $bubble_size FPS: 0"
+text_fps=$reply
+
+# Setting anchor and position to top left 10 10.
+sg_cmd "set text pos 10 10 $text_fps"
+
+# Set fullscreen enable/disable.
+update_fullscreen
+
+# Set FPS option.
+# sg_cmd "set sg fps 60"
+
+# Main game loop.
+while true; do
+    # 'update sg' must be called at the top of the game loop.
+    sg_cmd "update sg"
+
+    # Get the keys pressed and update the associated array.
+    get_keys_pressed
+
+    # Escape to quit.
+    (( pressed[esc] )) && sg_quit 0
+
+    # Toggle fullscreen.
+    if (( pressed[w] )); then
+        (( fullscreen = 1 - fullscreen ))
+        update_fullscreen
+    fi
+
+    # Toggle show fps.
+    (( pressed[f] )) && (( fps_display = 1 - fps_display ))
+
+    # Set the logical mode.
     (( pressed[1] )) && mode=1
     (( pressed[2] )) && mode=2
     (( pressed[3] )) && mode=3
@@ -110,10 +174,6 @@ while true; do
     (( pressed[7] )) && mode=7
     (( pressed[8] )) && mode=8
     (( pressed[9] )) && mode=9
-
-    (( pressed[esc] )) && sg_quit 0
-    (( pressed[w] )) && sg_cmd "set sg fullscreen toggle"
-    (( pressed[f] )) && fps=$(( 1 - fps ))
 
     for (( i = 0; i < ${#texts[@]}; i++ )); do
         sg_cmd "update text pos ${texts_xvel[$i]} ${texts_yvel[$i]} ${texts[$i]}"
@@ -210,8 +270,10 @@ while true; do
         done
     fi
 
+    # Clear the game renderer.
     sg_cmd "set render clear"
 
+    # Draw all text objects.
     if (( mode == 1 || mode == 5 )); then
         for (( i = 0; i < ${#texts[@]}; i++ )); do
             sg_cmd "draw text ${texts[$i]}"
@@ -220,13 +282,12 @@ while true; do
         sg_cmd "draw text ${texts[*]}"
     fi
 
-    if (( fps )); then
-        sg_cmd "get sg fps"
-        sg_cmd "set text string $text_fps FPS: $reply"
-        sg_cmd "draw text $text_fps"
-    fi
+    # Update the FPS text and display it if enabled.
+    (( fps_display )) && update_fps
 
+    # Present the renderer.
     sg_cmd "set render present"
 done
 
+# If exectution gets this far shut down.
 sg_quit 0

@@ -56,11 +56,11 @@ bool parse_sg(SdlServer *s, char *action) {
         } else if (!strcmp(p1, "resizable") && p2 && !p3) {
             if (!strcmp(p2, "enable")) {
                 // set sg resizable enable
-                SDL_SetWindowResizable(s->game->window, SDL_TRUE);
+                game_set_resizable(s->game, SDL_TRUE);
                 return true;
             } else if (!strcmp(p2, "disable")) {
                 // set sg resizable disable
-                SDL_SetWindowResizable(s->game->window, SDL_FALSE);
+                game_set_resizable(s->game, SDL_FALSE);
                 return true;
             }
         } else if (!strcmp(p1, "fullscreen") && p2 && !p3) {

@@ -1,11 +1,12 @@
 #include "parse_render.h"
+#include "rects.h"
 
 bool parse_render(SdlServer *s, char *action) {
     char *p1 = strtok(NULL, " ");
     char *p2 = strtok(NULL, " ");
-    char *p3 = strtok(NULL, " ");
 
     if (!strcmp(action, "set") && p1) {
+        char *p3 = strtok(NULL, " ");
         if (!strcmp(p1, "clear") && !p2) {
             // set render clear
             game_render_clear(s->game);
@@ -68,6 +69,21 @@ bool parse_render(SdlServer *s, char *action) {
                 s->game->render_color.a = a;
                 return true;
             }
+        }
+    } else if (!strcmp(action, "draw") && p2) {
+        if (!strcmp(p1, "fillrect")) {
+            // draw render fillrect {rect_id array}
+            while (p2) {
+                int rect_id = 0;
+                if (!str_to_id(&s->game->rects, p2, &rect_id, s->orig_str)) {
+                    return false;
+                }
+                game_render_fillrect(s->game, rect_id);
+
+                p2 = strtok(NULL, " ");
+            }
+
+            return true;
         }
     }
 

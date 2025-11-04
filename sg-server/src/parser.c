@@ -94,12 +94,19 @@ bool str_to_f(const char *str, float *value, const char *orig_str) {
 
 bool str_to_id(Buffer *buff, const char *str, int *index,
                const char *orig_str) {
+    if (!strcmp(str, "NULL")) {
+        *index = -1;
+        return true;
+    }
+
     if (!str_to_i(str, index, orig_str)) {
         return false;
     }
+
     if (*index == -1) {
-        fprintf(stderr, "Error: \"%s\" means the id was probably freed.\n",
-                str);
+        // fprintf(stderr, "Error: \"%s\" means the id was probably freed.\n",
+        //         str);
+        return true;
     } else if (*index < 0 || *index >= buff->cap) {
         fprintf(stderr, "Error: \"%s\" is not a valid id.\n", str);
     } else {

@@ -24,6 +24,10 @@ void text_recalculate_pos(Text *text) {
 }
 
 void text_set_size(Game *g, int id, float w, float h) {
+    if (id == -1) {
+        return;
+    }
+
     g->texts.texts[id].rect.w = (int)w;
     g->texts.texts[id].rect.h = (int)h;
 
@@ -31,6 +35,10 @@ void text_set_size(Game *g, int id, float w, float h) {
 }
 
 void text_set_pos(Game *g, int id, float x, float y) {
+    if (id == -1) {
+        return;
+    }
+
     g->texts.texts[id].x = x;
     g->texts.texts[id].y = y;
 
@@ -38,6 +46,10 @@ void text_set_pos(Game *g, int id, float x, float y) {
 }
 
 void text_update_pos(Game *g, int id, float x_vel, float y_vel) {
+    if (id == -1) {
+        return;
+    }
+
     g->texts.texts[id].x += x_vel * g->dt;
     g->texts.texts[id].y += y_vel * g->dt;
 
@@ -45,6 +57,10 @@ void text_update_pos(Game *g, int id, float x_vel, float y_vel) {
 }
 
 void text_update_angle(Game *g, int id, float angle) {
+    if (id == -1) {
+        return;
+    }
+
     float new_angle = g->texts.texts[id].angle + angle * g->dt;
 
     if (new_angle < 0) {
@@ -57,6 +73,10 @@ void text_update_angle(Game *g, int id, float angle) {
 }
 
 int text_get_rect_field(Game *g, int id, RectField field) {
+    if (id == -1) {
+        return 0;
+    }
+
     switch (field) {
     case RECT_X:
         return g->texts.texts[id].rect.x;
@@ -91,6 +111,10 @@ int text_get_rect_field(Game *g, int id, RectField field) {
 }
 
 void text_set_rect_field(Game *g, int id, RectField field, float value) {
+    if (id == -1) {
+        return;
+    }
+
     switch (field) {
     case RECT_X:
         g->texts.texts[id].anchor_h = RECT_X;
@@ -193,6 +217,10 @@ bool text_regen_image(SDL_Renderer *renderer, Text *t,
 }
 
 bool text_bubble_color(Game *g, int id, SDL_Color outer_color) {
+    if (id == -1) {
+        return true;
+    }
+
     g->texts.texts[id].outer_color = outer_color;
     g->texts.texts[id].bubble = true;
 
@@ -206,6 +234,10 @@ bool text_bubble_color(Game *g, int id, SDL_Color outer_color) {
 }
 
 bool text_bubble_radius(Game *g, int id, Uint8 radius) {
+    if (id == -1) {
+        return true;
+    }
+
     g->texts.texts[id].radius = radius;
     g->texts.texts[id].bubble = true;
 
@@ -219,6 +251,10 @@ bool text_bubble_radius(Game *g, int id, Uint8 radius) {
 }
 
 bool text_bubble_enable(Game *g, int id, bool bubble) {
+    if (id == -1) {
+        return true;
+    }
+
     g->texts.texts[id].bubble = bubble;
 
     if (!text_regen_image(g->renderer, &g->texts.texts[id], g->scale_mode)) {
@@ -231,6 +267,10 @@ bool text_bubble_enable(Game *g, int id, bool bubble) {
 }
 
 bool text_set_color(Game *g, int id, SDL_Color inner_color, Uint8 alpha) {
+    if (id == -1) {
+        return true;
+    }
+
     g->texts.texts[id].inner_color = inner_color;
     g->texts.texts[id].alpha = alpha;
 
@@ -239,6 +279,10 @@ bool text_set_color(Game *g, int id, SDL_Color inner_color, Uint8 alpha) {
 
 bool text_set_colors(Game *g, int id, SDL_Color inner_color,
                      SDL_Color outer_color, Uint8 alpha) {
+    if (id == -1) {
+        return true;
+    }
+
     g->texts.texts[id].inner_color = inner_color;
     g->texts.texts[id].outer_color = outer_color;
     g->texts.texts[id].alpha = alpha;
@@ -247,6 +291,10 @@ bool text_set_colors(Game *g, int id, SDL_Color inner_color,
 }
 
 bool text_set_font(Game *g, int id, const char *file, int size) {
+    if (id == -1) {
+        return true;
+    }
+
     TTF_CloseFont(g->texts.texts[id].font);
     g->texts.texts[id].font = NULL;
 
@@ -266,6 +314,10 @@ bool text_set_font(Game *g, int id, const char *file, int size) {
 }
 
 bool text_set_str(Game *g, int id, const char *new_str) {
+    if (id == -1) {
+        return true;
+    }
+
     if (!strcmp(g->texts.texts[id].text_str, new_str)) {
         return true;
     }
@@ -338,12 +390,20 @@ bool text_bubble_new(Game *g, int *id, const char *file, int size,
 }
 
 void text_draw(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     SDL_RenderCopyEx(g->renderer, g->texts.texts[id].image, NULL,
                      &g->texts.texts[id].rect, g->texts.texts[id].angle, NULL,
                      g->texts.texts[id].flip);
 }
 
 void text_free(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     if (g->texts.texts[id].font) {
         TTF_CloseFont(g->texts.texts[id].font);
         g->texts.texts[id].font = NULL;

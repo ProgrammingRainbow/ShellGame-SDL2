@@ -22,6 +22,10 @@ void rect_recalculate_pos(Rect *rect) {
 }
 
 void rect_set_size(Game *g, int id, int w, int h) {
+    if (id == -1) {
+        return;
+    }
+
     g->rects.rects[id].rect.w = w;
     g->rects.rects[id].rect.h = h;
 
@@ -29,6 +33,10 @@ void rect_set_size(Game *g, int id, int w, int h) {
 }
 
 void rect_set_pos(Game *g, int id, float x, float y) {
+    if (id == -1) {
+        return;
+    }
+
     g->rects.rects[id].x = x;
     g->rects.rects[id].y = y;
 
@@ -36,6 +44,10 @@ void rect_set_pos(Game *g, int id, float x, float y) {
 }
 
 void rect_update_pos(Game *g, int id, float x_vel, float y_vel) {
+    if (id == -1) {
+        return;
+    }
+
     g->rects.rects[id].x += x_vel * g->dt;
     g->rects.rects[id].y += y_vel * g->dt;
 
@@ -43,6 +55,10 @@ void rect_update_pos(Game *g, int id, float x_vel, float y_vel) {
 }
 
 void rect_update_angle(Game *g, int id, float angle) {
+    if (id == -1) {
+        return;
+    }
+
     float new_angle = g->rects.rects[id].angle + angle * g->dt;
 
     if (new_angle < 0) {
@@ -55,6 +71,10 @@ void rect_update_angle(Game *g, int id, float angle) {
 }
 
 int rect_get_rect_field(Game *g, int id, RectField field) {
+    if (id == -1) {
+        return 0;
+    }
+
     switch (field) {
     case RECT_X:
         return g->rects.rects[id].rect.x;
@@ -88,6 +108,10 @@ int rect_get_rect_field(Game *g, int id, RectField field) {
 }
 
 void rect_set_rect_field(Game *g, int id, RectField field, float value) {
+    if (id == -1) {
+        return;
+    }
+
     switch (field) {
     case RECT_X:
         g->rects.rects[id].anchor_h = RECT_X;
@@ -146,16 +170,24 @@ bool rect_from_image(Game *g, int *id, int img_id) {
     r.anchor_h = RECT_X;
     r.anchor_v = RECT_Y;
 
-    if (SDL_QueryTexture(g->images.images[img_id].image, NULL, NULL, &r.rect.w,
-                         &r.rect.h)) {
-        fprintf(stderr, "Error getting Texture size: %s\n", SDL_GetError());
-        return false;
+    if (img_id != -1) {
+        if (SDL_QueryTexture(g->images.images[img_id].image, NULL, NULL,
+                             &r.rect.w, &r.rect.h)) {
+            fprintf(stderr, "Error getting Texture size: %s\n", SDL_GetError());
+            return false;
+        }
     }
 
     return buffer_push(&g->rects, &r, id);
 }
 
-void rect_free(Game *g, int id) { buffer_free(&g->images, id); }
+void rect_free(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
+    buffer_free(&g->rects, id);
+}
 
 void rects_free(Game *g) {
     if (g && g->rects.rects) {

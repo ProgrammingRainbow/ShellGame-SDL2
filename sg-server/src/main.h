@@ -32,7 +32,7 @@
 #define FPS_TARGET 60
 #define FPS_MAX_DURATION 50
 
-#define BUFFER_SIZE 2048
+#define BUFFER_SIZE 10240
 
 typedef enum RectField {
     RECT_X,

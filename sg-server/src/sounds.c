@@ -13,6 +13,10 @@ bool sound_new(Game *g, int *id, const char *filename) {
 }
 
 bool sound_update(Game *g, int id, const char *filename) {
+    if (id == -1) {
+        return true;
+    }
+
     if (g->sounds.sounds[id].sound) {
         Mix_FreeChunk(g->sounds.sounds[id].sound);
         g->sounds.sounds[id].sound = NULL;
@@ -29,10 +33,18 @@ bool sound_update(Game *g, int id, const char *filename) {
 }
 
 void sound_play(Game *g, int id, int repeat) {
+    if (id == -1) {
+        return;
+    }
+
     Mix_PlayChannel(-1, g->sounds.sounds[id].sound, repeat);
 }
 
 void sound_free(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     if (g->sounds.sounds[id].sound) {
         Mix_FreeChunk(g->sounds.sounds[id].sound);
         g->sounds.sounds[id].sound = NULL;

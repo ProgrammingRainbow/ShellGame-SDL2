@@ -21,6 +21,10 @@ void sprite_recalculate_pos(Sprite *sprite) {
 }
 
 void sprite_set_size(Game *g, int id, int w, int h) {
+    if (id == -1) {
+        return;
+    }
+
     g->sprites.sprites[id].rect.w = w;
     g->sprites.sprites[id].rect.h = h;
 
@@ -28,6 +32,10 @@ void sprite_set_size(Game *g, int id, int w, int h) {
 }
 
 void sprite_set_pos(Game *g, int id, float x, float y) {
+    if (id == -1) {
+        return;
+    }
+
     g->sprites.sprites[id].x = x;
     g->sprites.sprites[id].y = y;
 
@@ -35,6 +43,10 @@ void sprite_set_pos(Game *g, int id, float x, float y) {
 }
 
 void sprite_update_pos(Game *g, int id, float x_vel, float y_vel) {
+    if (id == -1) {
+        return;
+    }
+
     g->sprites.sprites[id].x += x_vel * g->dt;
     g->sprites.sprites[id].y += y_vel * g->dt;
 
@@ -42,6 +54,10 @@ void sprite_update_pos(Game *g, int id, float x_vel, float y_vel) {
 }
 
 void sprite_update_angle(Game *g, int id, float angle) {
+    if (id == -1) {
+        return;
+    }
+
     float new_angle = g->sprites.sprites[id].angle + angle * g->dt;
 
     if (new_angle < 0) {
@@ -54,6 +70,10 @@ void sprite_update_angle(Game *g, int id, float angle) {
 }
 
 int sprite_get_rect_field(Game *g, int id, RectField field) {
+    if (id == -1) {
+        return 0;
+    }
+
     switch (field) {
     case RECT_X:
         return g->sprites.sprites[id].rect.x;
@@ -90,6 +110,10 @@ int sprite_get_rect_field(Game *g, int id, RectField field) {
 }
 
 void sprite_set_rect_field(Game *g, int id, RectField field, float value) {
+    if (id == -1) {
+        return;
+    }
+
     switch (field) {
     case RECT_X:
         g->sprites.sprites[id].anchor_h = RECT_X;
@@ -153,6 +177,10 @@ bool sprite_new(Game *g, int *id, const char *filename) {
 }
 
 bool sprite_update_image(Game *g, int id, const char *filename) {
+    if (id == -1) {
+        return true;
+    }
+
     if (g->sprites.sprites[id].image) {
         SDL_DestroyTexture(g->sprites.sprites[id].image);
         g->sprites.sprites[id].image = NULL;
@@ -178,12 +206,20 @@ bool sprite_update_image(Game *g, int id, const char *filename) {
 }
 
 void sprite_draw(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     SDL_RenderCopyEx(g->renderer, g->sprites.sprites[id].image, NULL,
                      &g->sprites.sprites[id].rect, g->sprites.sprites[id].angle,
                      NULL, g->sprites.sprites[id].flip);
 }
 
 void sprite_free(Game *g, int id) {
+    if (id == -1) {
+        return;
+    }
+
     if (g->sprites.sprites[id].image) {
         SDL_DestroyTexture(g->sprites.sprites[id].image);
         g->sprites.sprites[id].image = NULL;

@@ -19,22 +19,23 @@ else
     exit 1
 fi
 
-# Global Variables
+# Global Variables.
 width=1280
 height=720
 player_vel=300
 player_normalized_vel=232
+player_x_vel=0
+player_y_vel=0
 sprite_vel=180
 sprite_y_vel=$sprite_vel
 sprite_x_vel=$sprite_vel
-fps=0
-pos=0
+fps_display=0
+pos_display=0
 fullscreen=0
-sound=0
-x_vel=0
-y_vel=0
+play_music=0
+play_sound=0
 
-# Associated Arrays
+# Associated Arrays.
 declare -A pressed=(
     [esc]=0
     [space]=0
@@ -56,24 +57,60 @@ declare -A held=(
     [right]=0
 )
 
+# Capturing pressed keys in an associated array.
+get_keys_pressed() {
+    sg_cmd "arr key pressed esc 1 2 3 4 5 space"
+    pressed[esc]=${array[0]}
+    pressed[1]=${array[1]}
+    pressed[2]=${array[2]}
+    pressed[3]=${array[3]}
+    pressed[4]=${array[4]}
+    pressed[5]=${array[5]}
+    pressed[space]=${array[6]}
+}
+
+# function to enable/disable fullscreen.
+update_fullscreen() {
+    if (( fullscreen )); then
+        sg_cmd "set sg fullscreen desktop"
+    else
+        sg_cmd "set sg fullscreen disable"
+    fi
+}
+
+# Update the FPS text and display it if enabled.
+update_fps() {
+    sg_cmd "get sg fps"
+    sg_cmd "set text string $text_fps FPS: $reply"
+    sg_cmd "draw text $text_fps"
+}
+
+# function to enable/disable music.
+update_music() {
+    if (( play_music )); then
+        sg_cmd "get music playing"
+        if (( reply )); then
+            sg_cmd "set music resume"
+        else
+            sg_cmd "play music $music"
+        fi
+    else
+        sg_cmd "set music pause"
+    fi
+}
+
 # Start ShellGame.
 sg_cmd "start sg"
 
+# Set the size, title, icon, resizable, and scale quality.
+sg_cmd "set sg size $width $height"
+sg_cmd "set sg title Begginer's Guide to ShellGame"
+sg_cmd "set sg icon examples/images/bg-bash-logo.png"
 sg_cmd "set sg resizable enable"
 sg_cmd "set render scaling best"
-# sg_cmd "set render intscale enable"
-
-# Set the title to ShellGame.
-sg_cmd "set sg title Begginer's Guide to ShellGame"
-
-# Set the window size.
-sg_cmd "set sg size $width $height"
-
-# Set the window icon.
-sg_cmd "set sg icon examples/images/bash-logo.png"
 
 # Load the background image as an image.
-sg_cmd "new image examples/images/shellgame-background.png"
+sg_cmd "new image examples/images/bg-background.png"
 # Save the returned sprt_id to back_sprt variable.
 back_img=$reply
 
@@ -82,10 +119,10 @@ sg_cmd "new rect image $back_img"
 back_rect=$reply
 
 # Load an image as a sprite.
-sg_cmd "new sprite examples/images/bash-logo.png"
+sg_cmd "new sprite examples/images/bg-bash-logo.png"
 bash_sprt=$reply
 
-sg_cmd "new sprite examples/images/zsh-logo.png"
+sg_cmd "new sprite examples/images/bg-zsh-logo.png"
 zsh_sprt=$reply
 
 # Create a text object for displaying the FPS.
@@ -118,23 +155,22 @@ bash_snd=$reply
 sg_cmd "new music examples/music/freesoftwaresong-8bit.ogg"
 music=$reply
 
+# Set play music enable/disable.
+update_music
+
+# Set fullscreen enable/disable.
+update_fullscreen
+
 # Set FPS option.
-# sg_cmd "set sg fps 10000"
+# sg_cmd "set sg fps 60"
 
 # Main game loop.
 while true; do
     # 'update sg' must be called at the top of the game loop.
     sg_cmd "update sg"
 
-    # Getting key pressed states as an array.
-    sg_cmd "arr key pressed esc space f p m n 1"
-    pressed[esc]=${array[0]}
-    pressed[space]=${array[1]}
-    pressed[f]=${array[2]}
-    pressed[p]=${array[3]}
-    pressed[m]=${array[4]}
-    pressed[n]=${array[5]}
-    pressed[1]=${array[6]}
+    # Get the state of the needed keys and update associated array.
+    get_keys_pressed
 
     # Getting key held states as and array.
     sg_cmd "arr key held a s w d left down up right"
@@ -147,76 +183,77 @@ while true; do
     held[up]=${array[6]}
     held[right]=${array[7]}
 
+    # Escape to quit.
     (( pressed[esc] )) && sg_quit 0
-    (( pressed[f] )) && fps=$(( 1 - fps ))
-    (( pressed[p] )) && pos=$(( 1 - pos ))
-    (( pressed[n] )) && sound=$(( 1 - sound ))
 
+    # Toggle fullscreen.
+    if (( pressed[1] )); then
+        (( fullscreen = 1 - fullscreen ))
+        update_fullscreen
+    fi
+
+    # Toggle show fps.
+    (( pressed[2] )) && (( fps_display = 1 - fps_display ))
+
+    # Toggle playing music. If game is not in playing start pause music.
+    if (( pressed[3] )); then
+        play_music=$(( 1 - play_music ))
+        update_music
+    fi
+
+    # Toggle sound.
+    (( pressed[4] )) && (( play_sound = 1 - play_sound ))
+
+    # Toggle zsh possition text.
+    (( pressed[5] )) && (( pos_display = 1 - pos_display ))
+
+    # If space is pressed set the render draw color to a random color. Play sound.
     if (( pressed[space] )); then
-        (( sound )) && sg_cmd "play sound $bash_snd"
+        (( play_sound )) && sg_cmd "play sound $bash_snd"
         r=$(( RANDOM % 256 ))
         g=$(( RANDOM % 256 ))
         b=$(( RANDOM % 256 ))
         sg_cmd "set render color $r $g $b"
     fi
 
-    if (( pressed[1] )); then
-        fullscreen=$(( 1 - fullscreen ))
-        if (( fullscreen )); then
-            sg_cmd "set sg fullscreen desktop"
-        else
-            sg_cmd "set sg fullscreen disable"
-        fi
-    fi
-
-    # Play or pause music toggle.
-    if (( pressed[m] )); then
-        sg_cmd "get music playing"
-        if (( reply )); then
-            sg_cmd "get music paused"
-            if (( reply )); then
-                sg_cmd "set music resume"
-            else
-                sg_cmd "set music pause"
-            fi
-        else
-            sg_cmd "play music $music"
-        fi
-    fi
-
     # Moving the player sprite using a s w d or left down up right.
-    x_vel=0
-    y_vel=0
-    (( held[a] || held[left] )) && x_vel=-1 
-    (( held[s] || held[down] )) && y_vel=1
-    (( held[w] || held[up] )) && y_vel=-1
-    (( held[d] || held[right] )) && x_vel=1
+    # Get x and y as -1, 0, or 1
+    player_x_vel=0
+    player_y_vel=0
+    (( held[a] || held[left] )) && player_x_vel=-1 
+    (( held[s] || held[down] )) && player_y_vel=1
+    (( held[w] || held[up] )) && player_y_vel=-1
+    (( held[d] || held[right] )) && player_x_vel=1
 
-    if (( x_vel && y_vel )); then
-        sg_cmd "update sprite pos $(( x_vel * player_normalized_vel )) \
-            $(( y_vel * player_normalized_vel )) $bash_sprt"
+    # If moving in a diagnal use a normalized velocity 0.707.
+    if (( player_x_vel && player_y_vel )); then
+        sg_cmd "update sprite pos $(( player_x_vel * player_normalized_vel )) \
+            $(( player_y_vel * player_normalized_vel )) $bash_sprt"
     else
-        sg_cmd "update sprite pos $(( x_vel * player_vel )) \
-            $(( y_vel * player_vel )) $bash_sprt"
+        sg_cmd "update sprite pos $(( player_x_vel * player_vel )) \
+            $(( player_y_vel * player_vel )) $bash_sprt"
     fi
 
+    # Update the zsh sprite using delta time.
     sg_cmd "update sprite pos $sprite_x_vel $sprite_y_vel $zsh_sprt"
+
+    # Check for collision with the borders and flip direction.
     sg_cmd "arr sprite rect $zsh_sprt"
     if (( array[0] < 0 )); then 
         sprite_x_vel=$sprite_vel
-        (( sound )) && sg_cmd "play sound $zsh_snd"
+        (( play_sound )) && sg_cmd "play sound $zsh_snd"
     fi
     if (( array[4] > width )); then
         sprite_x_vel=-$sprite_vel
-        (( sound )) && sg_cmd "play sound $zsh_snd"
+        (( play_sound )) && sg_cmd "play sound $zsh_snd"
     fi
     if (( array[1] < 0 )); then
         sprite_y_vel=$sprite_vel
-        (( sound )) && sg_cmd "play sound $zsh_snd"
+        (( play_sound )) && sg_cmd "play sound $zsh_snd"
     fi
     if (( array[5] > height ));then
         sprite_y_vel=-$sprite_vel
-        (( sound )) && sg_cmd "play sound $zsh_snd"
+        (( play_sound )) && sg_cmd "play sound $zsh_snd"
     fi
 
     # Clear the game renderer.
@@ -225,13 +262,10 @@ while true; do
     # Draw the background image.
     sg_cmd "draw image NULL $back_rect $back_img"
 
-    if (( fps )); then
-        sg_cmd "get sg fps"
-        sg_cmd "set text string $text_fps FPS: $reply"
-        sg_cmd "draw text $text_fps"
-    fi
+    # Update the FPS text and display it if enabled.
+    (( fps_display )) && update_fps
 
-    if (( pos )); then
+    if (( pos_display )); then
         sg_cmd "arr sprite pos $zsh_sprt"
         sg_cmd "set text string $text_x X: ${array[0]}"
         sg_cmd "set text string $text_y Y: ${array[1]}"
