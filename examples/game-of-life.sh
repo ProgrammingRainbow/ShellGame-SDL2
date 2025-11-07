@@ -101,8 +101,8 @@ update_row() {
     for (( c = 0; c < $columns; c++ )); do
         count=0
         for (( range_r = row - 1; range_r < row + 2; range_r++)); do
-            (( range_index = range_r * columns ))
             (( check_r = (range_r + rows) % rows ))
+            (( range_index = check_r * columns ))
             for (( range_c = c - 1; range_c < c + 2; range_c++)); do
                 (( check_c = (range_c + columns) % columns ))
                 if (( range_r != r || range_c != c )); then
