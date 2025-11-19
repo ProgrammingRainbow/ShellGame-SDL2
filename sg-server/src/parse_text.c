@@ -95,7 +95,7 @@ bool parse_text(SdlServer *s, char *action) {
             }
             return true;
         } else if (p3) {
-            // update text (x|y) <float> {rect_id array}
+            // update text (x|y) <float> {text_id array}
             RectField field = 0;
             if (!strcmp(p1, "x")) {
                 field = RECT_X;
