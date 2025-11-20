@@ -109,7 +109,7 @@ generate_texts() {
     for i in {0..199}; do
         (( t_size = ( RANDOM % 60 ) + 10 ))
         (( b_size = ( t_size * 15 ) / 100 ))
-        sg_cmd "new text examples/fonts/freesansbold.ttf $t_size hello"
+        sg_cmd "new text bubble examples/fonts/freesansbold.ttf $t_size $b_size hello"
         texts[$i]=$reply
         text_reset ${texts[$i]}
         texts_xvel[$i]=$(( ( RANDOM % 1200 ) - 600 ))
@@ -142,7 +142,7 @@ sg_cmd "set text pos 10 10 $text_fps"
 update_fullscreen
 
 # Set FPS option.
-sg_cmd "set sg fps 1000"
+# sg_cmd "set sg fps 60"
 
 # Main game loop.
 while true; do
