@@ -1,4 +1,4 @@
-# ShellGame (SDL2)
+# ShellGame (SDL2) + Neural Network
 ShellGame is an SDL2 to Shell bridge for making games in the Shell. It uses an SDL2 game engine server written in C. There are multiple options for starting that server and establishing communication. Simply source one of those scripts and start writing your game. ShellGame works in Linux and MacOS, using Bash or zsh. The communication backends are --pipe, --stdinout, --socket, --shared(Linux only), --client(Linux only). Shared is much slower and client is 100 times slower.
 
 ![Screenshot](screenshot1.png)
@@ -188,6 +188,58 @@ done
 # If exectution gets this far shut down.
 sg_quit 0
 ```
+---
+
+## Neural Network
+This neural network is shell based. It uses integers not floats. It is used by the `examples/yellow-snow-ai.sh` script. There are pretrained networks in the `neural-network` folder. New networks can be trained entirely with a shell script. It is however very slow to train a network with a large population, layers, or trials. There is a much faster alternative written in C that uses multithreading. Both will output a text file that is a single array network.
+
+Building the c-trainer.
+```
+cd ShellGame-SDL2/neural-network
+make release
+```
+
+Neural Network training switches.
+```
+--filename neural-network    # The name of the new neural network.
+--threads 24                 # How many cpu threads to use. This option is for c only.
+--layers 15                  # The size and how many layers. 1 to 5 layers. 1 to 64 in size.
+--population 120             # The population size or pool of how many games your training with.
+--selection 80               # The size of the best of the population you want carry without mutation. 2 / 3 of population seems to be best.
+--trials 2                   # How many times each game plays.
+--generations 500            # The number of generations of playing, sorting population, and mutating.
+--mut_rate 5                 # The chance of each weight or bias gets mutated. Scaled by 1000 so 50 is 5%.
+--mut_range 5                # this is the + or - range that it can change. 5 will have a -5 to +5 range.
+--x_range 60                 # the x range of the flake to the snowman anything outside of +60 or -60 is 0 and closer the number gets bigger.
+--y_range 240                # Same as above but for the y. The y is only ever positive unlike the x.
+```
+
+Training a Neural Network in bash.
+You will want to be conservative with the numbers. Bash is much slower than c.
+```
+cd ShellGame-SDL2/neural-network
+bash shell-trainer --filename bash-network --layers 15 --population 48 --selection 32 --trials 2 --generations 300 --mut_rate 5 --mut_range 5 --x_range 60 --y_range 240
+```
+
+Training a Neural Network in C.
+You can train networks much faster with c so the numbers can be much larger.
+```
+cd ShellGame-SDL2/neural-network
+./c-trainer --filename c-network --threads 8 --layers 15 --population 120 --selection 80 --trials 2 --generations 3000 --mut_rate 5 --mut_range 5 --x_range 60 --y_range 240
+```
+
+Running Yellow Snow using the neural network.
+```
+1        Display FPS
+2        Unlock FPS
+Space    Reset Game.
+escape   Quits.
+```
+```
+cd ShellGame-SDL2
+bash examples/yellow-snow-ai.sh neural-network/c-15-network-1
+```
+
 ---
 
 ## ShellGame Core Commands
